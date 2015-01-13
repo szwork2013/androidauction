@@ -22,7 +22,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
@@ -55,17 +54,15 @@ public class ItemListFragment extends Fragment implements AbsListView.OnItemClic
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ArrayList<Item> items = null;
+        ArrayList<Item> items;
 
         if (getArguments() != null) {
             items = getArguments().getParcelableArrayList(ARG_ITEMS);
         } else {
-            items = new ArrayList<Item>();
+            items = new ArrayList<>();
         }
 
-        _adapter =
-                new ArrayAdapter<Item>(getActivity(), android.R.layout.simple_list_item_1,
-                        android.R.id.text1, items);
+        _adapter = new ItemsAdapter(getActivity(), items);
     }
 
     @Override
@@ -73,8 +70,7 @@ public class ItemListFragment extends Fragment implements AbsListView.OnItemClic
         View view = inflater.inflate(R.layout.fragment_item, container, false);
 
         _listView = (AbsListView) view.findViewById(android.R.id.list);
-        ((AdapterView<ListAdapter>) _listView).setAdapter(_adapter);
-
+        _listView.setAdapter(_adapter);
         _listView.setOnItemClickListener(this);
 
         setEmptyText(getString(R.string.list_no_results));

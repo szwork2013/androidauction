@@ -102,7 +102,7 @@ public class NavigationFragment extends Fragment {
         _fragmentContainerView = getActivity().findViewById(fragmentId);
         _drawerLayout = drawerLayout;
 
-        _drawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        _drawerLayout.setDrawerShadow(R.drawable.ic_drawer_shadow, GravityCompat.START);
 
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);

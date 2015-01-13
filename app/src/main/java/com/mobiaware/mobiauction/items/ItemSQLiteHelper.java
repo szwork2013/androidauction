@@ -17,14 +17,13 @@ package com.mobiaware.mobiauction.items;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
 import android.util.Log;
 
 public class ItemSQLiteHelper extends SQLiteOpenHelper {
 
     public static final String TABLE_ITEMS = "items";
 
-    public static final String COLUMN_ID = "_id";
-    public static final String COLUMN_AUCTION = "auction";
     public static final String COLUMN_NUMBER = "number";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_DESCRIPTION = "description";
@@ -43,14 +42,13 @@ public class ItemSQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "items.db";
     private static final int DATABASE_VERSION = 1;
 
-    private static final String DATABASE_CREATE = "create table " + TABLE_ITEMS + "(" + COLUMN_ID
-            + " integer primary key autoincrement, " + COLUMN_AUCTION + " integer, " + COLUMN_NUMBER
-            + " text not null, " + COLUMN_NAME + " text not null, " + COLUMN_DESCRIPTION
-            + " text not null, " + COLUMN_CATEGORY + " text not null, " + COLUMN_SELLER
-            + " text not null, " + COLUMN_VALPRICE + " real, " + COLUMN_MINPRICE + " real, "
-            + COLUMN_INCPRICE + " real, " + COLUMN_CURPRICE + " real, " + COLUMN_WINNER
-            + " text not null, " + COLUMN_BIDCOUNT + " integer, " + COLUMN_WATCHCOUNT + " integer, "
-            + COLUMN_URL + " text not null, " + COLUMN_MULTI + " integer);";
+    private static final String DATABASE_CREATE = "create table " + TABLE_ITEMS + "("
+            + BaseColumns._ID + " integer primary key autoincrement, " + COLUMN_NUMBER
+            + " text unique not null, " + COLUMN_NAME + " text, " + COLUMN_DESCRIPTION + " text, "
+            + COLUMN_CATEGORY + " text, " + COLUMN_SELLER + " text, " + COLUMN_VALPRICE + " real, "
+            + COLUMN_MINPRICE + " real, " + COLUMN_INCPRICE + " real, " + COLUMN_CURPRICE + " real, "
+            + COLUMN_WINNER + " text, " + COLUMN_BIDCOUNT + " integer, " + COLUMN_WATCHCOUNT
+            + " integer, " + COLUMN_URL + " text, " + COLUMN_MULTI + " integer" + ");";
 
     public ItemSQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

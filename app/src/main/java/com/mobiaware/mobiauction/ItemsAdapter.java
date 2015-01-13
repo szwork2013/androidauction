@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) 2010 mobiaware.com.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package com.mobiaware.mobiauction;
+
+import android.content.Context;
+import android.graphics.Color;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.mobiaware.mobiauction.items.Item;
+
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Locale;
+
+public class ItemsAdapter extends ArrayAdapter<Item> {
+    public ItemsAdapter(Context context, ArrayList<Item> items) {
+        super(context, 0, items);
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        Item item = getItem(position);
+
+        if (convertView == null) {
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_user, parent, false);
+        }
+
+        ((TextView) convertView.findViewById(R.id.itemName)).setText(item.getName());
+        ((TextView) convertView.findViewById(R.id.itemNumber)).setText("Item #: " + item.getNumber());
+
+        long bids = item.getBidCount();
+        if (bids == 0) {
+            ((TextView) convertView.findViewById(R.id.itemBids)).setText("No bids");
+        } else if (bids == 1) {
+            ((TextView) convertView.findViewById(R.id.itemBids)).setText("1 bid");
+        } else {
+            ((TextView) convertView.findViewById(R.id.itemBids)).setText(item.getBidCount() + " bids");
+        }
+
+        NumberFormat format =NumberFormat.getCurrencyInstance(Locale.US);
+        ((TextView) convertView.findViewById(R.id.itemPrice)).setText(format.format(item.getCurPrice()));
+        ((TextView) convertView.findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
+
+        ((ImageView) convertView.findViewById(R.id.itemWinning)).setVisibility(ImageView.VISIBLE);
+
+        return convertView;
+    }
+}

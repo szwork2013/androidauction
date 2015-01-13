@@ -19,7 +19,6 @@ import android.os.Parcelable;
 
 final public class Item implements Parcelable {
     private final long _id;
-    private final long _auction;
     private final String _number;
     private final String _name;
     private final String _description;
@@ -35,11 +34,10 @@ final public class Item implements Parcelable {
     private final String _url;
     private final boolean _multi;
 
-    public Item(long id, long auction, String number, String name, String description,
-                String category, String seller, double valPrice, double minPrice, double incPrice,
-                double curPrice, String winner, long bidCount, long watchCount, String url, boolean multi) {
+    public Item(long id, String number, String name, String description, String category,
+                String seller, double valPrice, double minPrice, double incPrice, double curPrice,
+                String winner, long bidCount, long watchCount, String url, boolean multi) {
         _id = id;
-        _auction = auction;
         _number = number;
         _name = name;
         _description = description;
@@ -57,18 +55,13 @@ final public class Item implements Parcelable {
     }
 
     public Item(Parcel in) {
-        this(in.readLong(), in.readLong(), in.readString(), in.readString(), in.readString(), in
-                .readString(), in.readString(), in.readDouble(), in.readDouble(), in.readDouble(), in
-                .readDouble(), in.readString(), in.readLong(), in.readLong(), in.readString(), in
-                .readLong() == 0);
+        this(in.readLong(), in.readString(), in.readString(), in.readString(), in.readString(), in
+                .readString(), in.readDouble(), in.readDouble(), in.readDouble(), in.readDouble(), in
+                .readString(), in.readLong(), in.readLong(), in.readString(), in.readLong() == 0);
     }
 
     public long getId() {
         return _id;
-    }
-
-    public long getAuction() {
-        return _auction;
     }
 
     public String getNumber() {
@@ -135,7 +128,6 @@ final public class Item implements Parcelable {
     @Override
     public void writeToParcel(Parcel out, int flags) {
         out.writeLong(_id);
-        out.writeLong(_auction);
         out.writeString(_number);
         out.writeString(_name);
         out.writeString(_description);

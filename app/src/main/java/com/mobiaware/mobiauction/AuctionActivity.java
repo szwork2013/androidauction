@@ -125,7 +125,7 @@ public class AuctionActivity extends ActionBarActivity implements
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject object = array.getJSONObject(i);
 
-                    _itemDatasource.createItem(object.getLong("auctionUid"), object.getString("itemNumber"),
+                    _itemDatasource.createItem(object.getString("itemNumber"),
                             object.getString("name"), object.getString("description"),
                             object.getString("category"), object.getString("seller"),
                             object.getDouble("valPrice"), object.getDouble("minPrice"),

@@ -19,6 +19,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 
@@ -26,14 +27,14 @@ public class ItemDataSource {
     private SQLiteDatabase _database;
     private ItemSQLiteHelper _databaseHelper;
 
-    private String[] allColumns = {ItemSQLiteHelper.COLUMN_ID, ItemSQLiteHelper.COLUMN_AUCTION,
-            ItemSQLiteHelper.COLUMN_NUMBER, ItemSQLiteHelper.COLUMN_NAME,
-            ItemSQLiteHelper.COLUMN_DESCRIPTION, ItemSQLiteHelper.COLUMN_CATEGORY,
-            ItemSQLiteHelper.COLUMN_SELLER, ItemSQLiteHelper.COLUMN_VALPRICE,
-            ItemSQLiteHelper.COLUMN_MINPRICE, ItemSQLiteHelper.COLUMN_INCPRICE,
-            ItemSQLiteHelper.COLUMN_CURPRICE, ItemSQLiteHelper.COLUMN_WINNER,
-            ItemSQLiteHelper.COLUMN_BIDCOUNT, ItemSQLiteHelper.COLUMN_WATCHCOUNT,
-            ItemSQLiteHelper.COLUMN_URL, ItemSQLiteHelper.COLUMN_MULTI};
+    private String[] allColumns = {BaseColumns._ID, ItemSQLiteHelper.COLUMN_NUMBER,
+            ItemSQLiteHelper.COLUMN_NAME, ItemSQLiteHelper.COLUMN_DESCRIPTION,
+            ItemSQLiteHelper.COLUMN_CATEGORY, ItemSQLiteHelper.COLUMN_SELLER,
+            ItemSQLiteHelper.COLUMN_VALPRICE, ItemSQLiteHelper.COLUMN_MINPRICE,
+            ItemSQLiteHelper.COLUMN_INCPRICE, ItemSQLiteHelper.COLUMN_CURPRICE,
+            ItemSQLiteHelper.COLUMN_WINNER, ItemSQLiteHelper.COLUMN_BIDCOUNT,
+            ItemSQLiteHelper.COLUMN_WATCHCOUNT, ItemSQLiteHelper.COLUMN_URL,
+            ItemSQLiteHelper.COLUMN_MULTI};
 
     public ItemDataSource(Context context) {
         _databaseHelper = new ItemSQLiteHelper(context);
@@ -47,11 +48,10 @@ public class ItemDataSource {
         _databaseHelper.close();
     }
 
-    public Item createItem(long auction, String number, String name, String description,
-                           String category, String seller, double valPrice, double minPrice, double incPrice,
-                           double curPrice, String winner, long bidCount, long watchCount, String url, boolean multi) {
+    public Item createItem(String number, String name, String description, String category,
+                           String seller, double valPrice, double minPrice, double incPrice, double curPrice,
+                           String winner, long bidCount, long watchCount, String url, boolean multi) {
         ContentValues values = new ContentValues();
-        values.put(ItemSQLiteHelper.COLUMN_AUCTION, auction);
         values.put(ItemSQLiteHelper.COLUMN_NUMBER, number);
         values.put(ItemSQLiteHelper.COLUMN_NAME, name);
         values.put(ItemSQLiteHelper.COLUMN_DESCRIPTION, description);
@@ -67,7 +67,9 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_URL, url);
         values.put(ItemSQLiteHelper.COLUMN_MULTI, multi);
 
-        long insertId = _database.insert(ItemSQLiteHelper.TABLE_ITEMS, null, values);
+        long insertId =
+                _database.insertWithOnConflict(ItemSQLiteHelper.TABLE_ITEMS, null, values,
+                        SQLiteDatabase.CONFLICT_REPLACE);
 
         return getItem(insertId);
     }
@@ -76,9 +78,8 @@ public class ItemDataSource {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, allColumns, ItemSQLiteHelper.COLUMN_ID
-                                    + " = " + id, null, ItemSQLiteHelper.COLUMN_NUMBER, null,
-                            ItemSQLiteHelper.COLUMN_NUMBER);
+                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, allColumns, BaseColumns._ID + "=" + id,
+                            null, ItemSQLiteHelper.COLUMN_NUMBER, null, ItemSQLiteHelper.COLUMN_NUMBER);
 
             if (cursor == null || cursor.getCount() == 0) {
                 return null; // < 1 means no item
@@ -94,7 +95,7 @@ public class ItemDataSource {
     }
 
     public ArrayList<Item> getItems() {
-        ArrayList<Item> items = new ArrayList<Item>();
+        ArrayList<Item> items = new ArrayList<>();
 
         Cursor cursor = null;
         try {
@@ -119,9 +120,9 @@ public class ItemDataSource {
     }
 
     private Item cursorToItem(Cursor cursor) {
-        return new Item(cursor.getLong(0), cursor.getLong(1), cursor.getString(2), cursor.getString(3),
-                cursor.getString(4), cursor.getString(5), cursor.getString(6), cursor.getDouble(7),
-                cursor.getDouble(8), cursor.getDouble(9), cursor.getDouble(10), cursor.getString(11),
-                cursor.getLong(12), cursor.getLong(13), cursor.getString(14), cursor.getLong(15) != 0);
+        return new Item(cursor.getLong(0), cursor.getString(1), cursor.getString(2),
+                cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getDouble(6),
+                cursor.getDouble(7), cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10),
+                cursor.getLong(11), cursor.getLong(12), cursor.getString(13), cursor.getLong(14) != 0);
     }
 }

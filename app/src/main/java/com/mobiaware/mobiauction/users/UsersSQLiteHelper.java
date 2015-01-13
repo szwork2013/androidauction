@@ -17,12 +17,12 @@ package com.mobiaware.mobiauction.users;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.provider.BaseColumns;
 import android.util.Log;
 
 public class UsersSQLiteHelper extends SQLiteOpenHelper {
     public static final String TABLE_USERS = "users";
 
-    public static final String COLUMN_ID = "_id";
     public static final String COLUMN_AUCTION = "auction";
     public static final String COLUMN_BIDDER = "bidder";
     public static final String COLUMN_PASSWORD = "password";
@@ -32,10 +32,10 @@ public class UsersSQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "users.db";
     private static final int DATABASE_VERSION = 1;
 
-    private static final String DATABASE_CREATE = "create table " + TABLE_USERS + "(" + COLUMN_ID
-            + " integer primary key autoincrement," + COLUMN_AUCTION + " integer," + COLUMN_BIDDER
-            + " text not null," + COLUMN_PASSWORD + " text not null," + COLUMN_FIRSTNAME
-            + " text not null," + COLUMN_LASTNAME + " text not null" + ");";
+    private static final String DATABASE_CREATE = "create table " + TABLE_USERS + "("
+            + BaseColumns._ID + " integer primary key autoincrement," + COLUMN_AUCTION + " integer,"
+            + COLUMN_BIDDER + " text unique not null," + COLUMN_PASSWORD + " text not null,"
+            + COLUMN_FIRSTNAME + " text," + COLUMN_LASTNAME + " text" + ");";
 
     public UsersSQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

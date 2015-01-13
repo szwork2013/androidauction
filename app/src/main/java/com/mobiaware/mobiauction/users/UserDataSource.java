@@ -19,12 +19,13 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
 
 public class UserDataSource {
     private SQLiteDatabase _database;
     private UsersSQLiteHelper _databaseHelper;
 
-    private String[] allColumns = {UsersSQLiteHelper.COLUMN_ID, UsersSQLiteHelper.COLUMN_AUCTION,
+    private String[] allColumns = {BaseColumns._ID, UsersSQLiteHelper.COLUMN_AUCTION,
             UsersSQLiteHelper.COLUMN_BIDDER, UsersSQLiteHelper.COLUMN_PASSWORD,
             UsersSQLiteHelper.COLUMN_FIRSTNAME, UsersSQLiteHelper.COLUMN_LASTNAME};
 
@@ -59,8 +60,8 @@ public class UserDataSource {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(UsersSQLiteHelper.TABLE_USERS, allColumns, UsersSQLiteHelper.COLUMN_ID
-                            + " = " + id, null, UsersSQLiteHelper.COLUMN_ID, null, UsersSQLiteHelper.COLUMN_ID);
+                    _database.query(UsersSQLiteHelper.TABLE_USERS, allColumns, BaseColumns._ID + "=" + id,
+                            null, null, null, null);
 
             if (cursor == null || cursor.getCount() == 0) {
                 return null; // < 1 means no login
