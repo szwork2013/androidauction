@@ -51,6 +51,8 @@ public class AuctionActivity extends ActionBarActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        _user = getIntent().getExtras().getParcelable(ARG_USER);
+
         _itemDatasource = new ItemDataSource(this);
         _itemDatasource.open();
 
@@ -62,8 +64,6 @@ public class AuctionActivity extends ActionBarActivity implements
 
         _navigationFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
-
-        _user = getIntent().getExtras().getParcelable(ARG_USER);
     }
 
     @Override
