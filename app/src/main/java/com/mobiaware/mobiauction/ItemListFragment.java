@@ -26,22 +26,22 @@ import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.mobiaware.mobiauction.items.Item;
+import com.mobiaware.mobiauction.users.User;
 
 import java.util.ArrayList;
 
 public class ItemListFragment extends Fragment implements AbsListView.OnItemClickListener {
-    private static final String ARG_ITEMS = "items";
-
     private OnFragmentInteractionListener _listener;
 
     private AbsListView _listView;
 
     private ListAdapter _adapter;
 
-    public static ItemListFragment newInstance(ArrayList<Item> items) {
+    public static ItemListFragment newInstance(User user, ArrayList<Item> items) {
         ItemListFragment fragment = new ItemListFragment();
         Bundle args = new Bundle();
-        args.putParcelableArrayList(ARG_ITEMS, items);
+        args.putParcelable(AuctionApplication.ARG_USER, user);
+        args.putParcelableArrayList(AuctionApplication.ARG_ITEMS, items);
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,15 +54,18 @@ public class ItemListFragment extends Fragment implements AbsListView.OnItemClic
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        User user;
         ArrayList<Item> items;
 
         if (getArguments() != null) {
-            items = getArguments().getParcelableArrayList(ARG_ITEMS);
+            user = getArguments().getParcelable(AuctionApplication.ARG_USER);
+            items = getArguments().getParcelableArrayList(AuctionApplication.ARG_ITEMS);
         } else {
+            user = null;
             items = new ArrayList<>();
         }
 
-        _adapter = new ItemsAdapter(getActivity(), items);
+        _adapter = new ItemsAdapter(getActivity(), items, user);
     }
 
     @Override

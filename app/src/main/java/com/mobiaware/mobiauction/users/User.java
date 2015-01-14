@@ -18,16 +18,16 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 final public class User implements Parcelable {
-    private final long _id;
+    private final long _uid;
     private final long _auction;
     private final String _bidder;
     private final String _password;
     private final String _firstName;
     private final String _lastName;
 
-    public User(long id, long auction, String bidder, String password, String firstName,
+    public User(long uid, long auction, String bidder, String password, String firstName,
                 String lastName) {
-        _id = id;
+        _uid = uid;
         _auction = auction;
         _bidder = bidder;
         _password = password;
@@ -40,8 +40,8 @@ final public class User implements Parcelable {
                 .readString());
     }
 
-    public long getId() {
-        return _id;
+    public long getUid() {
+        return _uid;
     }
 
     public long getAuction() {
@@ -71,7 +71,7 @@ final public class User implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        out.writeLong(_id);
+        out.writeLong(_uid);
         out.writeLong(_auction);
         out.writeString(_bidder);
         out.writeString(_password);

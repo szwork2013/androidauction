@@ -35,8 +35,6 @@ import java.util.ArrayList;
 
 public class AuctionActivity extends ActionBarActivity implements
         NavigationFragment.NavigationDrawerCallbacks, ItemListFragment.OnFragmentInteractionListener {
-    public static final String ARG_USER = "user";
-
     private NavigationFragment _navigationFragment;
 
     private CharSequence _title;
@@ -51,7 +49,7 @@ public class AuctionActivity extends ActionBarActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        _user = getIntent().getExtras().getParcelable(ARG_USER);
+        _user = getIntent().getExtras().getParcelable(AuctionApplication.ARG_USER);
 
         _itemDatasource = new ItemDataSource(this);
         _itemDatasource.open();
@@ -94,7 +92,7 @@ public class AuctionActivity extends ActionBarActivity implements
         ArrayList items = _itemDatasource.getItems();
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.container, ItemListFragment.newInstance(items))
+        fragmentManager.beginTransaction().replace(R.id.container, ItemListFragment.newInstance(_user, items))
                 .commit();
     }
 
@@ -104,15 +102,21 @@ public class AuctionActivity extends ActionBarActivity implements
     }
 
     public void refreshItems() {
-        _getItemsTask = new GetItemsTask(this);
+        _getItemsTask = new GetItemsTask(this, _user.getBidder(), _user.getPassword());
         _getItemsTask.execute((Void) null);
     }
 
     public class GetItemsTask extends AsyncTask<Void, Void, Boolean> {
         private ProgressDialog _progressDlg;
 
-        GetItemsTask(AuctionActivity activity) {
+        private final String _bidder;
+        private final String _password;
+
+        GetItemsTask(AuctionActivity activity, String bidder, String password) {
             _progressDlg = new ProgressDialog(activity);
+
+            _bidder = bidder;
+            _password = password;
         }
 
         @Override
@@ -125,13 +129,31 @@ public class AuctionActivity extends ActionBarActivity implements
                 for (int i = 0; i < array.length(); i++) {
                     JSONObject object = array.getJSONObject(i);
 
-                    _itemDatasource.createItem(object.getString("itemNumber"),
+                    _itemDatasource.createItem(object.getLong("uid"), object.getString("itemNumber"),
                             object.getString("name"), object.getString("description"),
                             object.getString("category"), object.getString("seller"),
                             object.getDouble("valPrice"), object.getDouble("minPrice"),
                             object.getDouble("incPrice"), object.getDouble("curPrice"),
-                            object.getString("winner"), object.getLong("bidCount"), object.getLong("watchCount"),
-                            object.getString("url"), object.getBoolean("multi"));
+                            object.optString("winner", ""), object.optLong("bidCount", 0), object.optLong("watchCount", 0),
+                            object.optString("url", ""), object.getBoolean("multi"));
+                }
+
+                response = RESTClient.get("/live/bids", _bidder, _password);
+
+                array = new JSONArray(response);
+
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject object = array.getJSONObject(i);
+                    _itemDatasource.setIsBidding(object.getLong("uid"));
+                }
+
+                response = RESTClient.get("/live/watches", _bidder, _password);
+
+                array = new JSONArray(response);
+
+                for (int i = 0; i < array.length(); i++) {
+                    JSONObject object = array.getJSONObject(i);
+                    _itemDatasource.setIsWatching(object.getLong("uid"));
                 }
             } catch (IOException e) {
                 return false;

@@ -32,10 +32,10 @@ public class MainActivity extends Activity {
         _userDatasource = new UserDataSource(this);
         _userDatasource.open();
 
-        User user = _userDatasource.getUser(1);
+        User user = _userDatasource.getActiveUser();
         if (user != null) {
             Intent intent = new Intent(getApplicationContext(), AuctionActivity.class);
-            intent.putExtra(AuctionActivity.ARG_USER, user);
+            intent.putExtra(AuctionApplication.ARG_USER, user);
             startActivity(intent);
         } else {
             startActivity(new Intent(getApplicationContext(), LoginActivity.class));

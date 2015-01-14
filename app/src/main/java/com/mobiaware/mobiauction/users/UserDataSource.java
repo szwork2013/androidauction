@@ -21,13 +21,16 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
+import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
+
 public class UserDataSource {
     private SQLiteDatabase _database;
     private UsersSQLiteHelper _databaseHelper;
 
-    private String[] allColumns = {BaseColumns._ID, UsersSQLiteHelper.COLUMN_AUCTION,
-            UsersSQLiteHelper.COLUMN_BIDDER, UsersSQLiteHelper.COLUMN_PASSWORD,
-            UsersSQLiteHelper.COLUMN_FIRSTNAME, UsersSQLiteHelper.COLUMN_LASTNAME};
+    private String[] allColumns = {UsersSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
+            UsersSQLiteHelper.COLUMN_AUCTION, UsersSQLiteHelper.COLUMN_BIDDER,
+            UsersSQLiteHelper.COLUMN_PASSWORD, UsersSQLiteHelper.COLUMN_FIRSTNAME,
+            UsersSQLiteHelper.COLUMN_LASTNAME};
 
 
     public UserDataSource(Context context) {
@@ -42,9 +45,12 @@ public class UserDataSource {
         _databaseHelper.close();
     }
 
-    public User createUser(long auction, String bidder, String password, String firstName,
+    public User createUser(long uid, long auction, String bidder, String password, String firstName,
                            String lastName) {
+        _database.delete(UsersSQLiteHelper.TABLE_USERS, null, null);
+
         ContentValues values = new ContentValues();
+        values.put(UsersSQLiteHelper.COLUMN_UID, uid);
         values.put(UsersSQLiteHelper.COLUMN_AUCTION, auction);
         values.put(UsersSQLiteHelper.COLUMN_BIDDER, bidder);
         values.put(UsersSQLiteHelper.COLUMN_PASSWORD, password);
@@ -53,15 +59,18 @@ public class UserDataSource {
 
         long insertId = _database.insert(UsersSQLiteHelper.TABLE_USERS, null, values);
 
-        return getUser(insertId);
+        if (insertId > 0) {
+            return getActiveUser();
+        }
+
+        return null;
     }
 
-    public User getUser(long id) {
+    public User getActiveUser() {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(UsersSQLiteHelper.TABLE_USERS, allColumns, BaseColumns._ID + "=" + id,
-                            null, null, null, null);
+                    _database.query(UsersSQLiteHelper.TABLE_USERS, allColumns, null, null, null, null, null);
 
             if (cursor == null || cursor.getCount() == 0) {
                 return null; // < 1 means no login

@@ -18,7 +18,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 final public class Item implements Parcelable {
-    private final long _id;
+    private final long _uid;
     private final String _number;
     private final String _name;
     private final String _description;
@@ -33,11 +33,14 @@ final public class Item implements Parcelable {
     private final long _watchCount;
     private final String _url;
     private final boolean _multi;
+    private final boolean _isBidding;
+    private final boolean _isWatching;
 
-    public Item(long id, String number, String name, String description, String category,
+    public Item(long uid, String number, String name, String description, String category,
                 String seller, double valPrice, double minPrice, double incPrice, double curPrice,
-                String winner, long bidCount, long watchCount, String url, boolean multi) {
-        _id = id;
+                String winner, long bidCount, long watchCount, String url, boolean multi, boolean isBidding,
+                boolean isWatching) {
+        _uid = uid;
         _number = number;
         _name = name;
         _description = description;
@@ -52,16 +55,19 @@ final public class Item implements Parcelable {
         _watchCount = watchCount;
         _url = url;
         _multi = multi;
+        _isBidding = isBidding;
+        _isWatching = isWatching;
     }
 
     public Item(Parcel in) {
         this(in.readLong(), in.readString(), in.readString(), in.readString(), in.readString(), in
                 .readString(), in.readDouble(), in.readDouble(), in.readDouble(), in.readDouble(), in
-                .readString(), in.readLong(), in.readLong(), in.readString(), in.readLong() == 0);
+                .readString(), in.readLong(), in.readLong(), in.readString(), in.readLong() == 0, in
+                .readLong() == 0, in.readLong() == 0);
     }
 
-    public long getId() {
-        return _id;
+    public long getUid() {
+        return _uid;
     }
 
     public String getNumber() {
@@ -120,6 +126,14 @@ final public class Item implements Parcelable {
         return _multi;
     }
 
+    public boolean isBidding() {
+        return _isBidding;
+    }
+
+    public boolean isWatching() {
+        return _isWatching;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -127,7 +141,7 @@ final public class Item implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel out, int flags) {
-        out.writeLong(_id);
+        out.writeLong(_uid);
         out.writeString(_number);
         out.writeString(_name);
         out.writeString(_description);
@@ -142,6 +156,8 @@ final public class Item implements Parcelable {
         out.writeLong(_watchCount);
         out.writeString(_url);
         out.writeLong(_multi ? 1 : 0);
+        out.writeLong(_isBidding ? 1 : 0);
+        out.writeLong(_isWatching ? 1 : 0);
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {

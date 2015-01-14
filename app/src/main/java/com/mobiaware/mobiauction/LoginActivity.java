@@ -163,8 +163,9 @@ public class LoginActivity extends Activity {
 
                 JSONObject object = new JSONObject(response);
 
-                user = _userDatasource.createUser(object.getLong("auctionUid"), _bidder, _password,
-                        object.getString("firstName"), object.getString("lastName"));
+                user =
+                        _userDatasource.createUser(object.getLong("uid"), object.getLong("auctionUid"),
+                                _bidder, _password, object.getString("firstName"), object.getString("lastName"));
 
             } catch (IOException e) {
                 user = null;
@@ -192,7 +193,7 @@ public class LoginActivity extends Activity {
 
             if (user != null) {
                 Intent intent = new Intent(getApplicationContext(), AuctionActivity.class);
-                intent.putExtra(AuctionActivity.ARG_USER, user);
+                intent.putExtra(AuctionApplication.ARG_USER, user);
                 startActivity(intent);
 
                 finish();

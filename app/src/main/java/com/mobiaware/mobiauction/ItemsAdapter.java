@@ -24,14 +24,19 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.mobiaware.mobiauction.items.Item;
+import com.mobiaware.mobiauction.users.User;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
 public class ItemsAdapter extends ArrayAdapter<Item> {
-    public ItemsAdapter(Context context, ArrayList<Item> items) {
+    private final User _user;
+
+    public ItemsAdapter(Context context, ArrayList<Item> items, User user) {
         super(context, 0, items);
+
+        _user = user;
     }
 
     @Override
@@ -54,11 +59,29 @@ public class ItemsAdapter extends ArrayAdapter<Item> {
             ((TextView) convertView.findViewById(R.id.itemBids)).setText(item.getBidCount() + " bids");
         }
 
-        NumberFormat format =NumberFormat.getCurrencyInstance(Locale.US);
+        NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
         ((TextView) convertView.findViewById(R.id.itemPrice)).setText(format.format(item.getCurPrice()));
         ((TextView) convertView.findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
 
-        ((ImageView) convertView.findViewById(R.id.itemWinning)).setVisibility(ImageView.VISIBLE);
+        if (item.isBidding()) {
+            if (item.getWinner().equals(_user.getBidder())) {
+                convertView.findViewById(R.id.itemWinning).setVisibility(ImageView.VISIBLE);
+                convertView.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
+                convertView.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+            } else {
+                convertView.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
+                convertView.findViewById(R.id.itemLosing).setVisibility(ImageView.VISIBLE);
+                convertView.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+            }
+        } else if (item.isWatching()) {
+            convertView.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
+            convertView.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
+            convertView.findViewById(R.id.itemFavorite).setVisibility(ImageView.VISIBLE);
+        } else {
+            convertView.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
+            convertView.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
+            convertView.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+        }
 
         return convertView;
     }

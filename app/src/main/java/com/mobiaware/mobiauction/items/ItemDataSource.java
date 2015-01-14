@@ -24,17 +24,18 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 
 public class ItemDataSource {
+    private static String[] ALL_COLUMNS = {ItemSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
+            ItemSQLiteHelper.COLUMN_NUMBER, ItemSQLiteHelper.COLUMN_NAME,
+            ItemSQLiteHelper.COLUMN_DESCRIPTION, ItemSQLiteHelper.COLUMN_CATEGORY,
+            ItemSQLiteHelper.COLUMN_SELLER, ItemSQLiteHelper.COLUMN_VALPRICE,
+            ItemSQLiteHelper.COLUMN_MINPRICE, ItemSQLiteHelper.COLUMN_INCPRICE,
+            ItemSQLiteHelper.COLUMN_CURPRICE, ItemSQLiteHelper.COLUMN_WINNER,
+            ItemSQLiteHelper.COLUMN_BIDCOUNT, ItemSQLiteHelper.COLUMN_WATCHCOUNT,
+            ItemSQLiteHelper.COLUMN_URL, ItemSQLiteHelper.COLUMN_MULTI,
+            ItemSQLiteHelper.COLUMN_ISBIDDING, ItemSQLiteHelper.COLUMN_ISWATCHING};
+
     private SQLiteDatabase _database;
     private ItemSQLiteHelper _databaseHelper;
-
-    private String[] allColumns = {BaseColumns._ID, ItemSQLiteHelper.COLUMN_NUMBER,
-            ItemSQLiteHelper.COLUMN_NAME, ItemSQLiteHelper.COLUMN_DESCRIPTION,
-            ItemSQLiteHelper.COLUMN_CATEGORY, ItemSQLiteHelper.COLUMN_SELLER,
-            ItemSQLiteHelper.COLUMN_VALPRICE, ItemSQLiteHelper.COLUMN_MINPRICE,
-            ItemSQLiteHelper.COLUMN_INCPRICE, ItemSQLiteHelper.COLUMN_CURPRICE,
-            ItemSQLiteHelper.COLUMN_WINNER, ItemSQLiteHelper.COLUMN_BIDCOUNT,
-            ItemSQLiteHelper.COLUMN_WATCHCOUNT, ItemSQLiteHelper.COLUMN_URL,
-            ItemSQLiteHelper.COLUMN_MULTI};
 
     public ItemDataSource(Context context) {
         _databaseHelper = new ItemSQLiteHelper(context);
@@ -48,10 +49,11 @@ public class ItemDataSource {
         _databaseHelper.close();
     }
 
-    public Item createItem(String number, String name, String description, String category,
+    public long createItem(long uid, String number, String name, String description, String category,
                            String seller, double valPrice, double minPrice, double incPrice, double curPrice,
                            String winner, long bidCount, long watchCount, String url, boolean multi) {
         ContentValues values = new ContentValues();
+        values.put(ItemSQLiteHelper.COLUMN_UID, uid);
         values.put(ItemSQLiteHelper.COLUMN_NUMBER, number);
         values.put(ItemSQLiteHelper.COLUMN_NAME, name);
         values.put(ItemSQLiteHelper.COLUMN_DESCRIPTION, description);
@@ -67,19 +69,34 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_URL, url);
         values.put(ItemSQLiteHelper.COLUMN_MULTI, multi);
 
-        long insertId =
-                _database.insertWithOnConflict(ItemSQLiteHelper.TABLE_ITEMS, null, values,
-                        SQLiteDatabase.CONFLICT_REPLACE);
+        return _database.insertWithOnConflict(ItemSQLiteHelper.TABLE_ITEMS, null, values,
+                SQLiteDatabase.CONFLICT_REPLACE);
 
-        return getItem(insertId);
     }
 
-    public Item getItem(long id) {
+    public long setIsBidding(long uid) {
+        ContentValues values = new ContentValues();
+        values.put(ItemSQLiteHelper.COLUMN_ISBIDDING, 1);
+
+        return _database.update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID
+                + "=?", new String[] {Long.toString(uid)});
+    }
+
+    public long setIsWatching(long uid) {
+        ContentValues values = new ContentValues();
+        values.put(ItemSQLiteHelper.COLUMN_ISWATCHING, 1);
+
+        return _database.update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID
+                + "=?", new String[] {Long.toString(uid)});
+    }
+
+    public Item getItem(long uid) {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, allColumns, BaseColumns._ID + "=" + id,
-                            null, ItemSQLiteHelper.COLUMN_NUMBER, null, ItemSQLiteHelper.COLUMN_NUMBER);
+                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS, ItemSQLiteHelper.COLUMN_UID
+                                    + "=?", new String[] {Long.toString(uid)}, ItemSQLiteHelper.COLUMN_NUMBER, null,
+                            ItemSQLiteHelper.COLUMN_NUMBER);
 
             if (cursor == null || cursor.getCount() == 0) {
                 return null; // < 1 means no item
@@ -100,7 +117,7 @@ public class ItemDataSource {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, allColumns, null, null,
+                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS, null, null,
                             ItemSQLiteHelper.COLUMN_NUMBER, null, ItemSQLiteHelper.COLUMN_NUMBER);
 
             if (cursor != null) {
@@ -123,6 +140,7 @@ public class ItemDataSource {
         return new Item(cursor.getLong(0), cursor.getString(1), cursor.getString(2),
                 cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getDouble(6),
                 cursor.getDouble(7), cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10),
-                cursor.getLong(11), cursor.getLong(12), cursor.getString(13), cursor.getLong(14) != 0);
+                cursor.getLong(11), cursor.getLong(12), cursor.getString(13), cursor.getLong(14) != 0,
+                cursor.getLong(15) != 0, cursor.getLong(16) != 0);
     }
 }
