@@ -79,7 +79,7 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_ISBIDDING, 1);
 
         return _database.update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID
-                + "=?", new String[] {Long.toString(uid)});
+                + "=?", new String[]{Long.toString(uid)});
     }
 
     public long setIsWatching(long uid) {
@@ -87,7 +87,7 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_ISWATCHING, 1);
 
         return _database.update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID
-                + "=?", new String[] {Long.toString(uid)});
+                + "=?", new String[]{Long.toString(uid)});
     }
 
     public Item getItem(long uid) {
@@ -95,7 +95,7 @@ public class ItemDataSource {
         try {
             cursor =
                     _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS, ItemSQLiteHelper.COLUMN_UID
-                                    + "=?", new String[] {Long.toString(uid)}, ItemSQLiteHelper.COLUMN_NUMBER, null,
+                                    + "=?", new String[]{Long.toString(uid)}, ItemSQLiteHelper.COLUMN_NUMBER, null,
                             ItemSQLiteHelper.COLUMN_NUMBER);
 
             if (cursor == null || cursor.getCount() == 0) {
@@ -119,6 +119,58 @@ public class ItemDataSource {
             cursor =
                     _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS, null, null,
                             ItemSQLiteHelper.COLUMN_NUMBER, null, ItemSQLiteHelper.COLUMN_NUMBER);
+
+            if (cursor != null) {
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast()) {
+                    items.add(cursorToItem(cursor));
+                    cursor.moveToNext();
+                }
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return items;
+    }
+
+    public ArrayList<Item> getMyItems() {
+        ArrayList<Item> items = new ArrayList<>();
+
+        Cursor cursor = null;
+        try {
+            cursor =
+                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS,
+                            ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 OR " + ItemSQLiteHelper.COLUMN_ISWATCHING
+                                    + "=1", null, ItemSQLiteHelper.COLUMN_NUMBER, null, null);
+
+            if (cursor != null) {
+                cursor.moveToFirst();
+                while (!cursor.isAfterLast()) {
+                    items.add(cursorToItem(cursor));
+                    cursor.moveToNext();
+                }
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+
+        return items;
+    }
+
+    public ArrayList<Item> getLowBidItems() {
+        ArrayList<Item> items = new ArrayList<>();
+
+        Cursor cursor = null;
+        try {
+            cursor =
+                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS,
+                            ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null, ItemSQLiteHelper.COLUMN_NUMBER, null,
+                            ItemSQLiteHelper.COLUMN_BIDCOUNT);
 
             if (cursor != null) {
                 cursor.moveToFirst();

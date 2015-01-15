@@ -22,6 +22,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 
 import com.mobiaware.mobiauction.api.RESTClient;
+import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.users.User;
 
@@ -31,10 +32,12 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 
 public class AuctionActivity extends ActionBarActivity implements
-        NavDrawerFragment.NavigationDrawerCallbacks, ItemListFragment.OnFragmentInteractionListener {
+        NavDrawerFragment.NavigationDrawerCallbacks {
     private NavDrawerFragment _navDrawerFragment;
 
     private CharSequence _title;
@@ -54,7 +57,7 @@ public class AuctionActivity extends ActionBarActivity implements
         _itemDatasource = new ItemDataSource(this);
         _itemDatasource.open();
 
-        setContentView(R.layout.activity_items);
+        setContentView(R.layout.activity_auction);
 
         _navDrawerFragment =
                 (NavDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
@@ -89,21 +92,58 @@ public class AuctionActivity extends ActionBarActivity implements
         // TODO: Remove this refresh
         refreshItems();
 
-        ArrayList items = _itemDatasource.getItems();
+
+        ArrayList items;
+        switch (position) {
+            case 1:
+                items = _itemDatasource.getMyItems();
+
+                class MyItemsComparator implements Comparator<Item> {
+                    @Override
+                    public int compare(Item o1, Item o2) {
+                        Boolean c1 = Boolean.valueOf(o1.getWinner().equals(_user.getBidder()));
+                        Boolean c2 = Boolean.valueOf(o2.getWinner().equals(_user.getBidder()));
+                        int i = c1.compareTo(c2);
+                        if (i != 0) {
+                            return i;
+                        }
+
+                        c1 = Boolean.valueOf(o1.isBidding());
+                        c2 = Boolean.valueOf(o2.isBidding());
+                        i = c1.compareTo(c2);
+                        if (i != 0) {
+                            return i;
+                        }
+
+                        c1 = Boolean.valueOf(o1.isWatching());
+                        c2 = Boolean.valueOf(o2.isWatching());
+                        i = c1.compareTo(c2);
+                        if (i != 0) {
+                            return i;
+                        }
+
+                        return o1.getNumber().compareTo(o2.getNumber());
+                    }
+                }
+
+                Collections.sort(items, new MyItemsComparator());
+                break;
+            case 2:
+                items = _itemDatasource.getLowBidItems();
+                break;
+            default:
+                items = _itemDatasource.getItems();
+                break;
+        }
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.container, ItemListFragment.newInstance(_user, items))
-                .commit();
-    }
-
-    @Override
-    public void onFragmentInteraction(String id) {
-        // TODO: Update argument type and name
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, ItemListFragment.newInstance(_user, items)).commit();
     }
 
     public void refreshItems() {
-        _getItemsTask = new GetItemsTask(this, _user.getBidder(), _user.getPassword());
-        _getItemsTask.execute((Void) null);
+        // _getItemsTask = new GetItemsTask(this, _user.getBidder(), _user.getPassword());
+        // _getItemsTask.execute((Void) null);
     }
 
     public class GetItemsTask extends AsyncTask<Void, Void, Boolean> {
@@ -134,8 +174,9 @@ public class AuctionActivity extends ActionBarActivity implements
                             object.getString("category"), object.getString("seller"),
                             object.getDouble("valPrice"), object.getDouble("minPrice"),
                             object.getDouble("incPrice"), object.getDouble("curPrice"),
-                            object.optString("winner", ""), object.optLong("bidCount", 0), object.optLong("watchCount", 0),
-                            object.optString("url", ""), object.getBoolean("multi"));
+                            object.optString("winner", ""), object.optLong("bidCount", 0),
+                            object.optLong("watchCount", 0), object.optString("url", ""),
+                            object.getBoolean("multi"));
                 }
 
                 response = RESTClient.get("/live/bids", _bidder, _password);

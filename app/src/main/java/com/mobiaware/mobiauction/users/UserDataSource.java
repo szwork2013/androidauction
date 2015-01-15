@@ -21,8 +21,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
-import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
-
 public class UserDataSource {
     private static String[] ALL_COLUMNS = {UsersSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
             UsersSQLiteHelper.COLUMN_AUCTION, UsersSQLiteHelper.COLUMN_BIDDER,

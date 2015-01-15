@@ -14,25 +14,20 @@
 
 package com.mobiaware.mobiauction;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.AdapterView;
 import android.widget.ListAdapter;
-import android.widget.TextView;
 
 import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.users.User;
 
 import java.util.ArrayList;
 
-public class ItemListFragment extends Fragment implements AbsListView.OnItemClickListener {
-    private OnFragmentInteractionListener _listener;
-
+public class ItemListFragment extends Fragment {
     private AbsListView _listView;
 
     private ListAdapter _adapter;
@@ -73,48 +68,9 @@ public class ItemListFragment extends Fragment implements AbsListView.OnItemClic
         View view = inflater.inflate(R.layout.fragment_item, container, false);
 
         _listView = (AbsListView) view.findViewById(android.R.id.list);
+        _listView.setEmptyView(view.findViewById(android.R.id.empty));
         _listView.setAdapter(_adapter);
-        _listView.setOnItemClickListener(this);
-
-        setEmptyText(getString(R.string.list_no_results));
 
         return view;
-    }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            _listener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        _listener = null;
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (null != _listener) {
-            // TODO: item click
-        }
-    }
-
-    public void setEmptyText(CharSequence emptyText) {
-        View emptyView = _listView.getEmptyView();
-
-        if (emptyView instanceof TextView) {
-            ((TextView) emptyView).setText(emptyText);
-        }
-    }
-
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(String id);
     }
 }

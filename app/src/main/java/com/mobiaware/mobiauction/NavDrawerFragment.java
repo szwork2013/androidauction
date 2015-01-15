@@ -53,9 +53,7 @@ public class NavDrawerFragment extends Fragment {
     private boolean _userLearnedDrawer;
 
 
-
     private NavDrawerItemsAdapter adapter;
-
 
 
     public NavDrawerFragment() {
