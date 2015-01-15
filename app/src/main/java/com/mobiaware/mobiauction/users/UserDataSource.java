@@ -24,14 +24,13 @@ import android.provider.BaseColumns;
 import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
 
 public class UserDataSource {
-    private SQLiteDatabase _database;
-    private UsersSQLiteHelper _databaseHelper;
-
-    private String[] allColumns = {UsersSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
+    private static String[] ALL_COLUMNS = {UsersSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
             UsersSQLiteHelper.COLUMN_AUCTION, UsersSQLiteHelper.COLUMN_BIDDER,
             UsersSQLiteHelper.COLUMN_PASSWORD, UsersSQLiteHelper.COLUMN_FIRSTNAME,
             UsersSQLiteHelper.COLUMN_LASTNAME};
 
+    private SQLiteDatabase _database;
+    private UsersSQLiteHelper _databaseHelper;
 
     public UserDataSource(Context context) {
         _databaseHelper = new UsersSQLiteHelper(context);
@@ -70,7 +69,7 @@ public class UserDataSource {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(UsersSQLiteHelper.TABLE_USERS, allColumns, null, null, null, null, null);
+                    _database.query(UsersSQLiteHelper.TABLE_USERS, ALL_COLUMNS, null, null, null, null, null);
 
             if (cursor == null || cursor.getCount() == 0) {
                 return null; // < 1 means no login

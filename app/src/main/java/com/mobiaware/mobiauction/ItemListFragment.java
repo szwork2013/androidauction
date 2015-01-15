@@ -65,7 +65,7 @@ public class ItemListFragment extends Fragment implements AbsListView.OnItemClic
             items = new ArrayList<>();
         }
 
-        _adapter = new ItemsAdapter(getActivity(), items, user);
+        _adapter = new ItemListItemsAdapter(getActivity(), items, user);
     }
 
     @Override

@@ -32,10 +32,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-public class NavigationFragment extends Fragment {
+import java.util.ArrayList;
+
+public class NavDrawerFragment extends Fragment {
     private static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
     private static final String PREF_USER_LEARNED_DRAWER = "navigation_drawer_learned";
 
@@ -51,7 +52,13 @@ public class NavigationFragment extends Fragment {
     private boolean _fromSavedInstanceState;
     private boolean _userLearnedDrawer;
 
-    public NavigationFragment() {
+
+
+    private NavDrawerItemsAdapter adapter;
+
+
+
+    public NavDrawerFragment() {
         // empty
     }
 
@@ -79,17 +86,32 @@ public class NavigationFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         _drawerListView =
-                (ListView) inflater.inflate(R.layout.fragment_navigation_drawer, container, false);
+                (ListView) inflater.inflate(R.layout.fragment_nav_drawer, container, false);
         _drawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectItem(position);
             }
         });
-        _drawerListView.setAdapter(new ArrayAdapter<String>(getActionBar().getThemedContext(),
-                android.R.layout.simple_list_item_activated_1, android.R.id.text1, new String[]{
-                getString(R.string.title_section1), getString(R.string.title_section2),
-                getString(R.string.title_section3),}));
+//        _drawerListView.setAdapter(new ArrayAdapter<String>(getActionBar().getThemedContext(),
+//                android.R.layout.simple_list_item_activated_1, android.R.id.text1, new String[]{
+//                getString(R.string.title_section1), getString(R.string.title_section2),
+//                getString(R.string.title_section3),}));
+
+        ArrayList<NavDrawerItem> navDrawerItems = new ArrayList<NavDrawerItem>();
+
+        // adding nav drawer items to array
+        // Home
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_section1), R.drawable.ic_items));
+        // Find People
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_section2), R.drawable.ic_myitems));
+        // Photos
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_section3), R.drawable.ic_lowitems));
+
+        adapter = new NavDrawerItemsAdapter(getActivity(),
+                navDrawerItems);
+        _drawerListView.setAdapter(adapter);
+
         _drawerListView.setItemChecked(_currentSelectedPosition, true);
         return _drawerListView;
     }

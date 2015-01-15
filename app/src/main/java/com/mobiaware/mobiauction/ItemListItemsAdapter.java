@@ -30,10 +30,10 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-public class ItemsAdapter extends ArrayAdapter<Item> {
+public class ItemListItemsAdapter extends ArrayAdapter<Item> {
     private final User _user;
 
-    public ItemsAdapter(Context context, ArrayList<Item> items, User user) {
+    public ItemListItemsAdapter(Context context, ArrayList<Item> items, User user) {
         super(context, 0, items);
 
         _user = user;
@@ -44,7 +44,7 @@ public class ItemsAdapter extends ArrayAdapter<Item> {
         Item item = getItem(position);
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_user, parent, false);
+            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_list_item, parent, false);
         }
 
         ((TextView) convertView.findViewById(R.id.itemName)).setText(item.getName());

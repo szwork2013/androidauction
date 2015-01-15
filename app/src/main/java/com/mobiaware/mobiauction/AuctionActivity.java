@@ -34,8 +34,8 @@ import java.util.ArrayList;
 
 
 public class AuctionActivity extends ActionBarActivity implements
-        NavigationFragment.NavigationDrawerCallbacks, ItemListFragment.OnFragmentInteractionListener {
-    private NavigationFragment _navigationFragment;
+        NavDrawerFragment.NavigationDrawerCallbacks, ItemListFragment.OnFragmentInteractionListener {
+    private NavDrawerFragment _navDrawerFragment;
 
     private CharSequence _title;
 
@@ -56,11 +56,11 @@ public class AuctionActivity extends ActionBarActivity implements
 
         setContentView(R.layout.activity_items);
 
-        _navigationFragment =
-                (NavigationFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
+        _navDrawerFragment =
+                (NavDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer);
         _title = getTitle();
 
-        _navigationFragment.setUp(R.id.navigation_drawer,
+        _navDrawerFragment.setUp(R.id.navigation_drawer,
                 (DrawerLayout) findViewById(R.id.drawer_layout));
     }
 
