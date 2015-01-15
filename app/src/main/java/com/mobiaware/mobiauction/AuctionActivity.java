@@ -141,6 +141,23 @@ public class AuctionActivity extends ActionBarActivity implements
                 .replace(R.id.container, ItemListFragment.newInstance(_user, items)).commit();
     }
 
+    @Override
+    public void onNavigationDrawerSearch(String search) {
+
+        ArrayList items;
+
+        if (search != null) {
+            items = _itemDatasource.getSearchItems(search);
+        } else {
+            items = _itemDatasource.getItems();
+        }
+
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.container, ItemListFragment.newInstance(_user, items)).commit();
+    }
+
     public void refreshItems() {
         // _getItemsTask = new GetItemsTask(this, _user.getBidder(), _user.getPassword());
         // _getItemsTask.execute((Void) null);

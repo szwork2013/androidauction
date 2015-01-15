@@ -12,5 +12,6 @@
     <string name="list_no_results">No Results</string>
 
     <string name="list_refreshing">Updating...</string>
+     <string name="search_title">Search</string>
 
 </resources>

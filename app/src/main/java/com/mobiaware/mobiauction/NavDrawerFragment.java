@@ -25,6 +25,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,7 +37,7 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class NavDrawerFragment extends Fragment {
+public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTextListener {
     private static final String STATE_SELECTED_POSITION = "selected_navigation_drawer_position";
     private static final String PREF_USER_LEARNED_DRAWER = "navigation_drawer_learned";
 
@@ -52,6 +53,7 @@ public class NavDrawerFragment extends Fragment {
     private boolean _fromSavedInstanceState;
     private boolean _userLearnedDrawer;
 
+    SearchView _searchView;
 
     private NavDrawerItemsAdapter adapter;
 
@@ -218,6 +220,25 @@ public class NavDrawerFragment extends Fragment {
         if (_drawerLayout != null && isDrawerOpen()) {
             showGlobalContextActionBar();
         }
+
+        inflater.inflate(R.menu.options_menu, menu);
+
+        MenuItem menuItem = menu.findItem(R.id.action_search);
+        _searchView = (SearchView) menuItem.getActionView();
+        _searchView.setOnQueryTextListener(this);
+        _searchView.setIconifiedByDefault(true);
+
+
+        _searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                if (_callbacks != null) {
+                    _callbacks.onNavigationDrawerSearch(null);
+                }
+                return false;
+            }
+        });
+
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -241,7 +262,23 @@ public class NavDrawerFragment extends Fragment {
         return ((ActionBarActivity) getActivity()).getSupportActionBar();
     }
 
+    @Override
+    public boolean onQueryTextSubmit(String s) {
+        if (_callbacks != null) {
+            _callbacks.onNavigationDrawerSearch(s);
+        }
+        _searchView.clearFocus();
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String s) {
+        return true;
+    }
+
     public static interface NavigationDrawerCallbacks {
         void onNavigationDrawerItemSelected(int position);
+
+        void onNavigationDrawerSearch(String search);
     }
 }
