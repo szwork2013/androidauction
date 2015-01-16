@@ -20,22 +20,31 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 
+import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.background.FetchItemsTask;
 import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.users.User;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
 
 public class AuctionActivity extends ActionBarActivity implements
-        NavDrawerFragment.NavigationDrawerCallbacks {
+        NavDrawerFragment.NavigationDrawerCallbacks, WSClient.WebsocketCallbacks {
+    private static final String TAG = AuctionActivity.class.getName();
     private static final String ARG_USER = "user";
 
     private ItemDataSource _datasource;
+    private WSClient _wsClient;
+
     private User _user;
 
     public static Intent newInstance(Context context, User user) {
@@ -50,6 +59,8 @@ public class AuctionActivity extends ActionBarActivity implements
 
         _datasource = new ItemDataSource(this);
         _datasource.open();
+
+        _wsClient = new WSClient(this);
 
         _user = getIntent().getExtras().getParcelable(AuctionApplication.ARG_USER);
 
@@ -69,18 +80,26 @@ public class AuctionActivity extends ActionBarActivity implements
                 new FetchItemsTask(this, _datasource, _user, getString(R.string.progress_refreshing));
         task.execute((Void) null);
 
+        _wsClient.start();
+
         super.onResume();
     }
 
     @Override
     protected void onPause() {
         _datasource.close();
+
+        _wsClient.stop();
+
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
         _datasource.close();
+
+        _wsClient.stop();
+
         super.onDestroy();
     }
 
@@ -148,5 +167,20 @@ public class AuctionActivity extends ActionBarActivity implements
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.container, ItemListFragment.newInstance(_user, items)).commit();
+    }
+
+    @Override
+    public void onItemMessage(String payload) {
+        try {
+            JSONObject object = new JSONObject(payload);
+            _datasource.createItem(object.getLong("uid"), object.getString("itemNumber"),
+                    object.getString("name"), object.getString("description"), object.getString("category"),
+                    object.getString("seller"), object.getDouble("valPrice"), object.getDouble("minPrice"),
+                    object.getDouble("incPrice"), object.getDouble("curPrice"),
+                    object.optString("winner", ""), object.optLong("bidCount", 0),
+                    object.optLong("watchCount", 0), object.optString("url", ""), object.getBoolean("multi"));
+        } catch (JSONException e) {
+            Log.e(TAG, "Error fetching auction items.", e);
+        }
     }
 }
