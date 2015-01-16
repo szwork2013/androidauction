@@ -91,9 +91,6 @@ public class RESTClient {
         }
 
         HttpClient httpClient = new DefaultHttpClient();
-
-        httpClient.getConnectionManager().getSchemeRegistry()
-                .register(new Scheme("SSLSocketFactory", SSLSocketFactory.getSocketFactory(), 443));
         return httpClient.execute(httpRequest, new BasicResponseHandler());
     }
 }

@@ -32,11 +32,13 @@ import java.util.Locale;
 
 public class ItemListItemsAdapter extends ArrayAdapter<Item> {
     private final User _user;
+    private final String[] _bidLabels;
 
     public ItemListItemsAdapter(Context context, ArrayList<Item> items, User user) {
         super(context, 0, items);
 
         _user = user;
+        _bidLabels = context.getResources().getStringArray(R.array.label_bid_count);
     }
 
     @Override
@@ -44,23 +46,26 @@ public class ItemListItemsAdapter extends ArrayAdapter<Item> {
         Item item = getItem(position);
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_list_item, parent, false);
+            convertView =
+                    LayoutInflater.from(getContext()).inflate(R.layout.item_list_item, parent, false);
         }
 
         ((TextView) convertView.findViewById(R.id.itemName)).setText(item.getName());
-        ((TextView) convertView.findViewById(R.id.itemNumber)).setText("Item #: " + item.getNumber());
+        ((TextView) convertView.findViewById(R.id.itemNumber)).setText(item.getNumber());
 
         long bids = item.getBidCount();
         if (bids == 0) {
-            ((TextView) convertView.findViewById(R.id.itemBids)).setText("No bids");
+            ((TextView) convertView.findViewById(R.id.itemBids)).setText(_bidLabels[0]);
         } else if (bids == 1) {
-            ((TextView) convertView.findViewById(R.id.itemBids)).setText("1 bid");
+            ((TextView) convertView.findViewById(R.id.itemBids)).setText(_bidLabels[1]);
         } else {
-            ((TextView) convertView.findViewById(R.id.itemBids)).setText(item.getBidCount() + " bids");
+            ((TextView) convertView.findViewById(R.id.itemBids)).setText(String.format(_bidLabels[2],
+                    Long.toString(item.getBidCount())));
         }
 
         NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
-        ((TextView) convertView.findViewById(R.id.itemPrice)).setText(format.format(item.getCurPrice()));
+        ((TextView) convertView.findViewById(R.id.itemPrice))
+                .setText(format.format(item.getCurPrice()));
         ((TextView) convertView.findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
 
         if (item.isBidding()) {

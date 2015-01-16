@@ -16,6 +16,7 @@ package com.mobiaware.mobiauction;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,6 +45,11 @@ public class LoginActivity extends Activity {
     private EditText _passwordView;
 
     private UserDataSource _userDatasource;
+
+    public static Intent newInstance(Context context) {
+        Intent intent = new Intent(context, LoginActivity.class);
+        return intent;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

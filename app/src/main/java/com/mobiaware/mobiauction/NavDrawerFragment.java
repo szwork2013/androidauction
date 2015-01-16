@@ -53,7 +53,7 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
     private boolean _fromSavedInstanceState;
     private boolean _userLearnedDrawer;
 
-    SearchView _searchView;
+    private SearchView _searchView;
 
     private NavDrawerItemsAdapter adapter;
 
@@ -93,20 +93,11 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
                 selectItem(position);
             }
         });
-//        _drawerListView.setAdapter(new ArrayAdapter<String>(getActionBar().getThemedContext(),
-//                android.R.layout.simple_list_item_activated_1, android.R.id.text1, new String[]{
-//                getString(R.string.title_section1), getString(R.string.title_section2),
-//                getString(R.string.title_section3),}));
 
-        ArrayList<NavDrawerItem> navDrawerItems = new ArrayList<NavDrawerItem>();
-
-        // adding nav drawer items to array
-        // Home
-        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_section1), R.drawable.ic_items));
-        // Find People
-        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_section2), R.drawable.ic_myitems));
-        // Photos
-        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_section3), R.drawable.ic_lowitems));
+        ArrayList<NavDrawerItem> navDrawerItems = new ArrayList<>();
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_listitems), R.drawable.ic_items));
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_listmyitems), R.drawable.ic_myitems));
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_listlowbids), R.drawable.ic_lowitems));
 
         adapter = new NavDrawerItemsAdapter(getActivity(),
                 navDrawerItems);
@@ -227,7 +218,10 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         _searchView = (SearchView) menuItem.getActionView();
         _searchView.setOnQueryTextListener(this);
         _searchView.setIconifiedByDefault(true);
-
+        _searchView.setIconified(true);
+        _searchView.setFocusable(false);
+        _searchView.setFocusableInTouchMode(true);
+        _searchView.clearFocus();
 
         _searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
@@ -238,6 +232,8 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
                 return false;
             }
         });
+
+
 
         super.onCreateOptionsMenu(menu, inflater);
     }

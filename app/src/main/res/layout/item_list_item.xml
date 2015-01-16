@@ -2,7 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp">
+    android:padding="10dp"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <TextView
         android:layout_width="fill_parent"
@@ -20,14 +22,29 @@
         android:layout_below="@+id/itemName"
         android:id="@+id/itemRow">
 
-        <TextView
+        <RelativeLayout
+            android:orientation="horizontal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Number"
-            android:id="@+id/itemNumber"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Item #: "
+                android:id="@+id/itemNumberLbl"
+                android:layout_alignParentTop="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Number"
+                android:id="@+id/itemNumber"
+                android:layout_toRightOf="@+id/itemNumberLbl"/>
+        </RelativeLayout>
 
         <TextView
             android:layout_width="wrap_content"
@@ -61,8 +78,7 @@
             android:src="@drawable/ic_winning"
             android:id="@+id/itemWinning"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:visibility="invisible" />
+            android:layout_alignParentTop="true" />
 
         <ImageView
             android:layout_width="wrap_content"
@@ -70,8 +86,7 @@
             android:src="@drawable/ic_losing"
             android:id="@+id/itemLosing"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:visibility="invisible" />
+            android:layout_alignParentTop="true" />
 
         <ImageView
             android:layout_width="wrap_content"
@@ -79,8 +94,7 @@
             android:src="@drawable/ic_favorite"
             android:id="@+id/itemFavorite"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            android:visibility="invisible" />
+            android:layout_alignParentTop="true" />
     </RelativeLayout>
 
 </RelativeLayout>

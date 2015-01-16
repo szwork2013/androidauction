@@ -15,7 +15,6 @@
 package com.mobiaware.mobiauction;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 
 import com.mobiaware.mobiauction.users.User;
@@ -34,11 +33,9 @@ public class MainActivity extends Activity {
 
         User user = _userDatasource.getActiveUser();
         if (user != null) {
-            Intent intent = new Intent(getApplicationContext(), AuctionActivity.class);
-            intent.putExtra(AuctionApplication.ARG_USER, user);
-            startActivity(intent);
+            startActivity(AuctionActivity.newInstance(getApplicationContext(), user));
         } else {
-            startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+            startActivity(LoginActivity.newInstance(getApplicationContext()));
         }
 
         finish();
