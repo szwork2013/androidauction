@@ -14,11 +14,13 @@
 
 package com.mobiaware.mobiauction.items;
 
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
@@ -34,22 +36,13 @@ public class ItemDataSource {
             ItemSQLiteHelper.COLUMN_URL, ItemSQLiteHelper.COLUMN_MULTI,
             ItemSQLiteHelper.COLUMN_ISBIDDING, ItemSQLiteHelper.COLUMN_ISWATCHING};
 
-    private SQLiteDatabase _database;
-    private ItemSQLiteHelper _databaseHelper;
+    private ContentResolver _contentResolver;
 
     public ItemDataSource(Context context) {
-        _databaseHelper = new ItemSQLiteHelper(context);
+        _contentResolver = context.getContentResolver();
     }
 
-    public void open() throws SQLException {
-        _database = _databaseHelper.getWritableDatabase();
-    }
-
-    public void close() {
-        _databaseHelper.close();
-    }
-
-    public long createItem(long uid, String number, String name, String description, String category,
+    public void createItem(long uid, String number, String name, String description, String category,
                            String seller, double valPrice, double minPrice, double incPrice, double curPrice,
                            String winner, long bidCount, long watchCount, String url, boolean multi) {
         ContentValues values = new ContentValues();
@@ -69,47 +62,25 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_URL, url);
         values.put(ItemSQLiteHelper.COLUMN_MULTI, multi);
 
-        return _database.insertWithOnConflict(ItemSQLiteHelper.TABLE_ITEMS, null, values,
-                SQLiteDatabase.CONFLICT_REPLACE);
-
+        Uri uri = _contentResolver.insert(ItemContentProvider.CONTENT_URI, values);
     }
 
     public long setIsBidding(long uid) {
         ContentValues values = new ContentValues();
         values.put(ItemSQLiteHelper.COLUMN_ISBIDDING, 1);
 
-        return _database.update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID
-                + "=?", new String[] {Long.toString(uid)});
+        return _contentResolver.update(ItemContentProvider.CONTENT_URI, values,
+                ItemSQLiteHelper.COLUMN_UID + "=?", new String[] {Long.toString(uid)});
     }
 
     public long setIsWatching(long uid) {
         ContentValues values = new ContentValues();
         values.put(ItemSQLiteHelper.COLUMN_ISWATCHING, 1);
 
-        return _database.update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID
-                + "=?", new String[] {Long.toString(uid)});
+        return _contentResolver.update(ItemContentProvider.CONTENT_URI, values,
+                ItemSQLiteHelper.COLUMN_UID + "=?", new String[] {Long.toString(uid)});
     }
 
-    public Item getItem(long uid) {
-        Cursor cursor = null;
-        try {
-            cursor =
-                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS, ItemSQLiteHelper.COLUMN_UID
-                                    + "=?", new String[] {Long.toString(uid)}, ItemSQLiteHelper.COLUMN_NUMBER, null,
-                            ItemSQLiteHelper.COLUMN_NUMBER);
-
-            if (cursor == null || cursor.getCount() == 0) {
-                return null; // < 1 means no item
-            }
-
-            cursor.moveToFirst();
-            return cursorToItem(cursor);
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-    }
 
     public ArrayList<Item> getItems() {
         ArrayList<Item> items = new ArrayList<>();
@@ -117,8 +88,9 @@ public class ItemDataSource {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS, null, null,
-                            ItemSQLiteHelper.COLUMN_NUMBER, null, ItemSQLiteHelper.COLUMN_NUMBER);
+                    _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS, null, null,
+                            ItemSQLiteHelper.COLUMN_NUMBER);
+
 
             if (cursor != null) {
                 cursor.moveToFirst();
@@ -142,9 +114,9 @@ public class ItemDataSource {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS,
+                    _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
                             ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 OR " + ItemSQLiteHelper.COLUMN_ISWATCHING
-                                    + "=1", null, ItemSQLiteHelper.COLUMN_NUMBER, null, null);
+                                    + "=1", null, ItemSQLiteHelper.COLUMN_NUMBER);
 
             if (cursor != null) {
                 cursor.moveToFirst();
@@ -168,9 +140,8 @@ public class ItemDataSource {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS,
-                            ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null, ItemSQLiteHelper.COLUMN_NUMBER, null,
-                            ItemSQLiteHelper.COLUMN_BIDCOUNT);
+                    _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
+                            ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null, ItemSQLiteHelper.COLUMN_BIDCOUNT);
 
             if (cursor != null) {
                 cursor.moveToFirst();
@@ -194,10 +165,11 @@ public class ItemDataSource {
         Cursor cursor = null;
         try {
             cursor =
-                    _database.query(ItemSQLiteHelper.TABLE_ITEMS, ALL_COLUMNS, ItemSQLiteHelper.COLUMN_NUMBER
-                                    + " LIKE '%" + s + "%' OR " + ItemSQLiteHelper.COLUMN_NAME + " LIKE '%" + s
-                                    + "%' OR " + ItemSQLiteHelper.COLUMN_DESCRIPTION + " LIKE '%" + s + "%'", null,
-                            ItemSQLiteHelper.COLUMN_NUMBER, null, ItemSQLiteHelper.COLUMN_BIDCOUNT);
+                    _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
+                            ItemSQLiteHelper.COLUMN_NUMBER + " LIKE '%" + s + "%' OR "
+                                    + ItemSQLiteHelper.COLUMN_NAME + " LIKE '%" + s + "%' OR "
+                                    + ItemSQLiteHelper.COLUMN_DESCRIPTION + " LIKE '%" + s + "%'", null,
+                            ItemSQLiteHelper.COLUMN_NUMBER);
 
             if (cursor != null) {
                 cursor.moveToFirst();

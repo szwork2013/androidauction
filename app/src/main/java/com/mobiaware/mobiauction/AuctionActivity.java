@@ -57,11 +57,9 @@ public class AuctionActivity extends ActionBarActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        _datasource = new ItemDataSource(this);
-        _datasource.open();
-
         _wsClient = new WSClient(this);
 
+        _datasource = new ItemDataSource(this);
         _user = getIntent().getExtras().getParcelable(AuctionApplication.ARG_USER);
 
         setContentView(R.layout.activity_auction);
@@ -74,8 +72,6 @@ public class AuctionActivity extends ActionBarActivity implements
 
     @Override
     protected void onResume() {
-        _datasource.open();
-
         FetchItemsTask task =
                 new FetchItemsTask(this, _datasource, _user, getString(R.string.progress_refreshing));
         task.execute((Void) null);
@@ -87,8 +83,6 @@ public class AuctionActivity extends ActionBarActivity implements
 
     @Override
     protected void onPause() {
-        _datasource.close();
-
         _wsClient.stop();
 
         super.onPause();
@@ -96,7 +90,6 @@ public class AuctionActivity extends ActionBarActivity implements
 
     @Override
     protected void onDestroy() {
-        _datasource.close();
 
         _wsClient.stop();
 

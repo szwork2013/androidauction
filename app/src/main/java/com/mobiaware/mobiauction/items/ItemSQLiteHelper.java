@@ -20,7 +20,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 public class ItemSQLiteHelper extends SQLiteOpenHelper {
-
     public static final String TABLE_ITEMS = "items";
 
     public static final String COLUMN_UID = "uid";
