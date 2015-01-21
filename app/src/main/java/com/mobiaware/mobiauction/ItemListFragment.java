@@ -14,36 +14,63 @@
 
 package com.mobiaware.mobiauction;
 
+import android.app.ProgressDialog;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 
+import com.mobiaware.mobiauction.api.RESTClient;
 import com.mobiaware.mobiauction.items.ItemContentProvider;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
+import com.mobiaware.mobiauction.users.User;
+import com.mobiaware.mobiauction.utils.Preconditions;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 
 public class ItemListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String TAG = ItemListFragment.class.getName();
+
     private static final String ARG_TYPE = "type";
+    private static final String ARG_FILTER = "filter";
 
     private AbsListView _listView;
+    private SwipeRefreshLayout _swipeContainer;
 
     private ItemListItemsAdapter _adapter;
 
     private LoaderManager _loaderManager;
     private CursorLoader _cursorLoader;
 
-    public static ItemListFragment newInstance(int type) {
+    private ProgressDialog _progressDlg;
+    private GetItemsTask _getItemsTask;
+
+    private ItemDataSource _datasource;
+
+    private int _type;
+    private String _filter;
+
+    public static ItemListFragment newInstance(int type, String filter) {
         ItemListFragment fragment = new ItemListFragment();
 
         Bundle args = new Bundle();
         args.putInt(ARG_TYPE, type);
+        args.putString(ARG_FILTER, filter);
+
         fragment.setArguments(args);
 
         return fragment;
@@ -53,15 +80,17 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        int type = 0;
         if (getArguments() != null) {
-            type = getArguments().getInt(ARG_TYPE);
+            _type = getArguments().getInt(ARG_TYPE, 0);
+            _filter = getArguments().getString(ARG_FILTER, null);
         }
 
         _adapter = new ItemListItemsAdapter(getActivity(), null);
 
         _loaderManager = getLoaderManager();
-        _loaderManager.initLoader(type, null, this);
+        _loaderManager.initLoader(_type, null, this);
+
+        _datasource = new ItemDataSource(getActivity());
     }
 
     @Override
@@ -72,6 +101,33 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
         _listView.setEmptyView(view.findViewById(android.R.id.empty));
         _listView.setAdapter(_adapter);
 
+        _swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipecontainer);
+        _swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                _swipeContainer.setRefreshing(false); // hide right away and use the progress dlg
+                refreshItems();
+            }
+        });
+
+
+        _listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {}
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
+                                 int totalItemCount) {
+                boolean enable = false;
+                if (_listView != null && _listView.getChildCount() > 0) {
+                    boolean firstItemVisible = _listView.getFirstVisiblePosition() == 0;
+                    boolean topOfFirstItemVisible = _listView.getChildAt(0).getTop() == 0;
+                    enable = firstItemVisible && topOfFirstItemVisible;
+                }
+                _swipeContainer.setEnabled(enable);
+            }
+        });
+
         return view;
     }
 
@@ -79,11 +135,14 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case 1:
+                User user = ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();
+
                 _cursorLoader =
                         new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
-                                ItemDataSource.ALL_COLUMNS, ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 OR "
-                                + ItemSQLiteHelper.COLUMN_ISWATCHING + "=1", null,
-                                ItemSQLiteHelper.COLUMN_NUMBER);
+                                ItemDataSource.ALL_COLUMNS, ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 or "
+                                + ItemSQLiteHelper.COLUMN_ISWATCHING + "=1", null, "CASE WHEN "
+                                + ItemSQLiteHelper.COLUMN_WINNER + "!=" + user.getBidder()
+                                + " THEN 0 ELSE 1 END");
                 break;
             case 2:
                 _cursorLoader =
@@ -91,7 +150,14 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
                                 ItemDataSource.ALL_COLUMNS, ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null,
                                 ItemSQLiteHelper.COLUMN_BIDCOUNT);
                 break;
-
+            case 11:
+                _cursorLoader =
+                        new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
+                                ItemDataSource.ALL_COLUMNS, ItemSQLiteHelper.COLUMN_NUMBER + " like '%" + _filter
+                                + "%' or " + ItemSQLiteHelper.COLUMN_NAME + " like '%" + _filter + "%' or "
+                                + ItemSQLiteHelper.COLUMN_DESCRIPTION + " like '%" + _filter + "%'", null,
+                                ItemSQLiteHelper.COLUMN_NUMBER);
+                break;
             default:
                 _cursorLoader =
                         new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
@@ -111,6 +177,109 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
     public void onLoaderReset(Loader<Cursor> loader) {
         if (_adapter != null) {
             _adapter.swapCursor(null);
+        }
+    }
+
+
+
+    private void refreshItems() {
+        if (_getItemsTask != null) {
+            return;
+        }
+        User user = ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();
+
+        showProgress();
+        _getItemsTask = new GetItemsTask();
+        _getItemsTask.execute(new String[] {user.getBidder(), user.getPassword()});
+    }
+
+    private void showProgress() {
+        hideProgress();
+
+        _progressDlg = new ProgressDialog(getActivity());
+        _progressDlg.setMessage(getString(R.string.progress_refreshing));
+        _progressDlg.setIndeterminate(true);
+        _progressDlg.show();
+    }
+
+    private void hideProgress() {
+        if (_progressDlg != null && _progressDlg.isShowing()) {
+            _progressDlg.dismiss();
+            _progressDlg = null;
+        }
+    }
+
+    public class GetItemsTask extends AsyncTask<String, Void, Boolean> {
+        @Override
+        protected Boolean doInBackground(String... params) {
+            Preconditions
+                    .checkArgument(params.length == 2, "Requires bidder and password as parameters.");
+
+            try {
+                fetchItems();
+                fetchBids(params[0], params[1]);
+                fetchWatches(params[0], params[1]);
+            } catch (IOException e) {
+                Log.e(TAG, "Error fetching auction items.", e);
+                return false;
+            } catch (JSONException e) {
+                Log.e(TAG, "Error fetching auction items.", e);
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            _getItemsTask = null;
+            hideProgress();
+        }
+
+        @Override
+        protected void onCancelled() {
+            _getItemsTask = null;
+            hideProgress();
+        }
+
+        private void fetchItems() throws IOException, JSONException {
+            String response = RESTClient.get("/event/auctions/1/items", null);
+
+            JSONArray array = new JSONArray(response);
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject object = array.getJSONObject(i);
+
+                _datasource.createItem(object.getLong("uid"), object.getString("itemNumber"),
+                        object.getString("name"), object.getString("description"),
+                        object.getString("category"), object.getString("seller"), object.getDouble("valPrice"),
+                        object.getDouble("minPrice"), object.getDouble("incPrice"),
+                        object.getDouble("curPrice"), object.optString("winner", ""),
+                        object.optLong("bidCount", 0), object.optLong("watchCount", 0),
+                        object.optString("url", ""), object.getBoolean("multi"));
+            }
+        }
+
+        private void fetchBids(String bidder, String password) throws IOException, JSONException {
+            String response = RESTClient.get("/live/bids", bidder, password);
+
+            JSONArray array = new JSONArray(response);
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject object = array.getJSONObject(i);
+                _datasource.setIsBidding(object.getLong("uid"));
+            }
+        }
+
+        private void fetchWatches(String bidder, String password) throws IOException, JSONException {
+            String response = RESTClient.get("/live/watches", bidder, password);
+
+            JSONArray array = new JSONArray(response);
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject object = array.getJSONObject(i);
+                _datasource.setIsWatching(object.getLong("uid"));
+            }
         }
     }
 }

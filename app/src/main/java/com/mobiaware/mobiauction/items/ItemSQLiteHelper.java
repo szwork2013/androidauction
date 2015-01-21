@@ -44,13 +44,13 @@ public class ItemSQLiteHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
     // NOTE: uid comes from the liveauction service and is used as the primary key
-    private static final String DATABASE_CREATE = "create table " + TABLE_ITEMS + "(" + COLUMN_UID
-            + " integer primary key," + COLUMN_NUMBER + " text unique not null, " + COLUMN_NAME
-            + " text, " + COLUMN_DESCRIPTION + " text, " + COLUMN_CATEGORY + " text, " + COLUMN_SELLER
-            + " text, " + COLUMN_VALPRICE + " real, " + COLUMN_MINPRICE + " real, " + COLUMN_INCPRICE
-            + " real, " + COLUMN_CURPRICE + " real, " + COLUMN_WINNER + " text, " + COLUMN_BIDCOUNT
-            + " integer, " + COLUMN_WATCHCOUNT + " integer, " + COLUMN_URL + " text, " + COLUMN_MULTI
-            + " integer," + COLUMN_ISBIDDING + " integer," + COLUMN_ISWATCHING + " integer" + ");";
+    private static final String DATABASE_CREATE = "CREATE TABLE " + TABLE_ITEMS + "(" + COLUMN_UID
+            + " INTEGER PRIMARY KEY," + COLUMN_NUMBER + " TEXT UNIQUE NOT NULL, " + COLUMN_NAME
+            + " TEXT, " + COLUMN_DESCRIPTION + " TEXT, " + COLUMN_CATEGORY + " TEXT, " + COLUMN_SELLER
+            + " TEXT, " + COLUMN_VALPRICE + " REAL, " + COLUMN_MINPRICE + " REAL, " + COLUMN_INCPRICE
+            + " REAL, " + COLUMN_CURPRICE + " REAL, " + COLUMN_WINNER + " TEXT, " + COLUMN_BIDCOUNT
+            + " INTEGER, " + COLUMN_WATCHCOUNT + " INTEGER, " + COLUMN_URL + " TEXT, " + COLUMN_MULTI
+            + " INTEGER," + COLUMN_ISBIDDING + " INTEGER," + COLUMN_ISWATCHING + " INTEGER" + ");";
 
     public ItemSQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -65,7 +65,7 @@ public class ItemSQLiteHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.w(ItemSQLiteHelper.class.getName(), "Upgrading database from version " + oldVersion
                 + " to " + newVersion + ", which will destroy all old data");
-        db.execSQL("drop table if exists " + TABLE_ITEMS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ITEMS);
         onCreate(db);
     }
 }

@@ -10,15 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".LoginActivity">
 
-    <!-- Login progress -->
-
-    <ImageView
-        android:layout_width="fill_parent"
-        android:layout_height="60dp"
-        android:id="@+id/login_logo"
-        android:layout_gravity="center_horizontal"
-        android:src="@drawable/ic_logo" />
-
     <ScrollView
         android:id="@+id/login_form"
         android:layout_width="match_parent"

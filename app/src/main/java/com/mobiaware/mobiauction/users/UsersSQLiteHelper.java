@@ -32,10 +32,10 @@ public class UsersSQLiteHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "users.db";
     private static final int DATABASE_VERSION = 1;
 
-    private static final String DATABASE_CREATE = "create table " + TABLE_USERS + "(" + COLUMN_UID
-            + " integer primary key," + COLUMN_AUCTION + " integer," + COLUMN_BIDDER
-            + " text unique not null," + COLUMN_PASSWORD + " text not null," + COLUMN_FIRSTNAME
-            + " text," + COLUMN_LASTNAME + " text" + ");";
+    private static final String DATABASE_CREATE = "CREATE TABLE " + TABLE_USERS + "(" + COLUMN_UID
+            + " INTEGER PRIMARY KEY," + COLUMN_AUCTION + " INTEGER," + COLUMN_BIDDER
+            + " TEXT UNIQUE NOT NULL," + COLUMN_PASSWORD + " TEXT NOT NULL," + COLUMN_FIRSTNAME
+            + " TEXT," + COLUMN_LASTNAME + " TEXT" + ");";
 
     public UsersSQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -50,7 +50,7 @@ public class UsersSQLiteHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.w(UsersSQLiteHelper.class.getName(), "Upgrading database from version " + oldVersion
                 + " to " + newVersion + ", which will destroy all old data");
-        db.execSQL("drop table if exists " + TABLE_USERS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         onCreate(db);
     }
 }

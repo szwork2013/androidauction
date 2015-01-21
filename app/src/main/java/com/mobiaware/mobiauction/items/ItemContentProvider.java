@@ -118,8 +118,8 @@ public class ItemContentProvider extends ContentProvider {
                 break;
             case ITEMS_ID:
                 String id = uri.getLastPathSegment();
-                database.delete(ItemSQLiteHelper.TABLE_ITEMS, ItemSQLiteHelper.COLUMN_UID + " = " + id
-                        + (!TextUtils.isEmpty(selection) ? " and (" + selection + ')' : ""), selectionArgs);
+                database.delete(ItemSQLiteHelper.TABLE_ITEMS, ItemSQLiteHelper.COLUMN_UID + "=" + id
+                        + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -146,7 +146,7 @@ public class ItemContentProvider extends ContentProvider {
                 String id = uri.getLastPathSegment();
                 database
                         .update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID + "=" + id
-                                + (!TextUtils.isEmpty(selection) ? " and (" + selection + ')' : ""), selectionArgs);
+                                + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
