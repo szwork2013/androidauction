@@ -17,7 +17,6 @@ package com.mobiaware.mobiauction.items;
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -27,12 +26,13 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 public class ItemContentProvider extends ContentProvider {
-    static final String AUTHORITY = "com.mobiaware.mobiauction.items.ItemContentProvider";
-    static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/"
+    public static final int ITEMS = 100;
+    public static final int ITEMS_ID = 200;
+
+    public static final String AUTHORITY = "com.mobiaware.mobiauction.items.ItemContentProvider";
+    public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/"
             + ItemSQLiteHelper.TABLE_ITEMS);
 
-    public static final int ITEMS = 1;
-    public static final int ITEMS_ID = 2;
 
     private static final UriMatcher URI_MATCHER = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -41,20 +41,12 @@ public class ItemContentProvider extends ContentProvider {
         URI_MATCHER.addURI(AUTHORITY, ItemSQLiteHelper.TABLE_ITEMS + "/#", ITEMS_ID);
     }
 
-    private SQLiteDatabase _database;
     private ItemSQLiteHelper _databaseHelper;
-
-    public ItemContentProvider() {
-
-    }
 
     @Override
     public boolean onCreate() {
-        Context context = getContext();
-        _databaseHelper = new ItemSQLiteHelper(context);
-
-        _database = _databaseHelper.getWritableDatabase();
-        return (_database != null);
+        _databaseHelper = new ItemSQLiteHelper(getContext());
+        return false;
     }
 
     @Override
@@ -63,20 +55,21 @@ public class ItemContentProvider extends ContentProvider {
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
         queryBuilder.setTables(ItemSQLiteHelper.TABLE_ITEMS);
 
+        SQLiteDatabase database = _databaseHelper.getReadableDatabase();
+
         int uriType = URI_MATCHER.match(uri);
         switch (uriType) {
+            case ITEMS:
+                break;
             case ITEMS_ID:
                 queryBuilder.appendWhere(ItemSQLiteHelper.COLUMN_UID + "=" + uri.getLastPathSegment());
-                break;
-            case ITEMS:
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
 
         Cursor cursor =
-                queryBuilder.query(_databaseHelper.getReadableDatabase(), projection, selection,
-                        selectionArgs, null, null, sortOrder);
+                queryBuilder.query(database, projection, selection, selectionArgs, null, null, sortOrder);
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
         return cursor;
     }
@@ -88,39 +81,42 @@ public class ItemContentProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        long rowId = 0;
+        long insertId = 0;
+
+        SQLiteDatabase database = _databaseHelper.getWritableDatabase();
 
         int uriType = URI_MATCHER.match(uri);
         switch (uriType) {
             case ITEMS:
-                rowId = _database.insert(ItemSQLiteHelper.TABLE_ITEMS, "", values);
+                insertId = database.insertWithOnConflict(ItemSQLiteHelper.TABLE_ITEMS, "", values, SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
 
-        if (rowId > 0) {
-            Uri tmp = ContentUris.withAppendedId(CONTENT_URI, rowId);
+        if (insertId > 0) {
+            Uri tmp = ContentUris.withAppendedId(CONTENT_URI, insertId);
             getContext().getContentResolver().notifyChange(tmp, null);
             return tmp;
         }
 
-        throw new SQLException("Failed to add a record:" + uri);
+        throw new SQLException("Failed to insert record:" + uri);
     }
 
     @Override
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         int rowsDeleted = 0;
 
+        SQLiteDatabase database = _databaseHelper.getWritableDatabase();
+
         int uriType = URI_MATCHER.match(uri);
         switch (uriType) {
             case ITEMS:
-                rowsDeleted = _database.delete(ItemSQLiteHelper.TABLE_ITEMS, selection, selectionArgs);
+                rowsDeleted = database.delete(ItemSQLiteHelper.TABLE_ITEMS, selection, selectionArgs);
                 break;
-
             case ITEMS_ID:
                 String id = uri.getLastPathSegment();
-                _database.delete(ItemSQLiteHelper.TABLE_ITEMS, ItemSQLiteHelper.COLUMN_UID + " = " + id
+                database.delete(ItemSQLiteHelper.TABLE_ITEMS, ItemSQLiteHelper.COLUMN_UID + " = " + id
                         + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
@@ -136,15 +132,17 @@ public class ItemContentProvider extends ContentProvider {
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         int rowsUpdated = 0;
 
+        SQLiteDatabase database = _databaseHelper.getWritableDatabase();
+
         int uriType = URI_MATCHER.match(uri);
         switch (uriType) {
             case ITEMS:
                 rowsUpdated =
-                        _database.update(ItemSQLiteHelper.TABLE_ITEMS, values, selection, selectionArgs);
+                        database.update(ItemSQLiteHelper.TABLE_ITEMS, values, selection, selectionArgs);
                 break;
             case ITEMS_ID:
                 String id = uri.getLastPathSegment();
-                _database
+                database
                         .update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID + " = " + id
                                 + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
                 break;

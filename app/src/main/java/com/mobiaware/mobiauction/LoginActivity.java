@@ -21,6 +21,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,7 +32,7 @@ import android.widget.TextView;
 
 import com.mobiaware.mobiauction.api.RESTClient;
 import com.mobiaware.mobiauction.users.User;
-import com.mobiaware.mobiauction.users.UserDataSource;
+import com.mobiaware.mobiauction.utils.Preconditions;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,24 +40,22 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 public class LoginActivity extends Activity {
-    private UserLoginTask _authTask = null;
+    private static final String TAG = LoginActivity.class.getName();
 
     private EditText _bidderView;
     private EditText _passwordView;
 
-    private UserDataSource _userDatasource;
+    private ProgressDialog _progressDlg;
+
+    private LoginTask _loginTask;
 
     public static Intent newInstance(Context context) {
-        Intent intent = new Intent(context, LoginActivity.class);
-        return intent;
+        return new Intent(context, LoginActivity.class);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        _userDatasource = new UserDataSource(this);
-        _userDatasource.open();
 
         setContentView(R.layout.activity_login);
 
@@ -83,26 +82,8 @@ public class LoginActivity extends Activity {
         });
     }
 
-    @Override
-    protected void onResume() {
-        _userDatasource.open();
-        super.onResume();
-    }
-
-    @Override
-    protected void onPause() {
-        _userDatasource.close();
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        _userDatasource.close();
-        super.onDestroy();
-    }
-
     public void attemptLogin() {
-        if (_authTask != null) {
+        if (_loginTask != null) {
             return;
         }
 
@@ -134,74 +115,67 @@ public class LoginActivity extends Activity {
         if (cancel) {
             focusView.requestFocus();
         } else {
-            _authTask = new UserLoginTask(this, bidder, password);
-            _authTask.execute((Void) null);
+            showProgress();
+            _loginTask = new LoginTask();
+            _loginTask.execute(new String[]{bidder, password});
         }
     }
 
     private boolean isBidderValid(String bidder) {
-        return TextUtils.isDigitsOnly(bidder);
+        return true;
     }
 
     private boolean isPasswordValid(String password) {
         return true;
     }
 
-    public class UserLoginTask extends AsyncTask<Void, Void, User> {
-        private ProgressDialog _progressDlg;
+    private void showProgress() {
+        hideProgress();
 
-        private final String _bidder;
-        private final String _password;
+        _progressDlg = new ProgressDialog(this);
+        _progressDlg.setMessage(getString(R.string.progresss_authenticating));
+        _progressDlg.setIndeterminate(true);
+        _progressDlg.show();
+    }
 
-        UserLoginTask(LoginActivity activity, String bidder, String password) {
-            _progressDlg = new ProgressDialog(activity);
-
-            _bidder = bidder;
-            _password = password;
+    private void hideProgress() {
+        if (_progressDlg != null && _progressDlg.isShowing()) {
+            _progressDlg.dismiss();
+            _progressDlg = null;
         }
+    }
 
+    public class LoginTask extends AsyncTask<String, Void, User> {
         @Override
-        protected User doInBackground(Void... params) {
-            User user = null;
+        protected User doInBackground(String... params) {
+            Preconditions
+                    .checkArgument(params.length == 2, "Requires bidder and password as parameters.");
 
             try {
-                String response = RESTClient.post("/live/sessions", _bidder, _password, null);
+                String response = RESTClient.post("/live/sessions", params[0], params[1], null);
 
                 JSONObject object = new JSONObject(response);
 
-                user =
-                        _userDatasource.createUser(object.getLong("uid"), object.getLong("auctionUid"),
-                                _bidder, _password, object.getString("firstName"), object.getString("lastName"));
+                return new User(object.getLong("uid"), object.getLong("auctionUid"), params[0], params[1],
+                        object.getString("firstName"), object.getString("lastName"));
 
             } catch (IOException e) {
-                user = null;
+                Log.e(TAG, "Error authenticating bidder..", e);
             } catch (JSONException e) {
-                user = null;
+                Log.e(TAG, "Error authenticating bidder..", e);
             }
 
-            return user;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            _progressDlg.setMessage(getString(R.string.progresss_authenticating));
-            _progressDlg.show();
-            _progressDlg.setCanceledOnTouchOutside(false);
+            return null;
         }
 
         @Override
         protected void onPostExecute(User user) {
-            _authTask = null;
-
-            if (_progressDlg.isShowing()) {
-                _progressDlg.dismiss();
-            }
+            _loginTask = null;
+            hideProgress();
 
             if (user != null) {
-                Intent intent = new Intent(getApplicationContext(), AuctionActivity.class);
-                intent.putExtra(AuctionApplication.ARG_USER, user);
-                startActivity(intent);
-
+                ((AuctionApplication) getApplicationContext()).setActiveUser(user);
+                startActivity(new Intent(getApplicationContext(), AuctionActivity.class));
                 finish();
             } else {
                 _passwordView.setError(getString(R.string.error_incorrect_password));
@@ -211,11 +185,8 @@ public class LoginActivity extends Activity {
 
         @Override
         protected void onCancelled() {
-            _authTask = null;
-
-            if (_progressDlg.isShowing()) {
-                _progressDlg.dismiss();
-            }
+            _loginTask = null;
+            hideProgress();
         }
     }
 }

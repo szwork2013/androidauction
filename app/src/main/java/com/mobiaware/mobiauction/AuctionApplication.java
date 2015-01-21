@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2010 mobiaware.com.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software distributed under the License
  * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
  * or implied. See the License for the specific language governing permissions and limitations under
@@ -16,7 +16,39 @@ package com.mobiaware.mobiauction;
 
 import android.app.Application;
 
+import com.mobiaware.mobiauction.users.User;
+import com.mobiaware.mobiauction.users.UserDataSource;
+
 public class AuctionApplication extends Application {
-    public static final String ARG_USER = "user";
-    public static final String ARG_ITEMS = "items";
+    private User _user;
+
+    public User getActiveUser() {
+        if (_user == null) {
+            UserDataSource datasource = null;
+            try {
+                datasource = new UserDataSource(this);
+                datasource.open();
+
+                _user = datasource.getActiveUser();
+            } finally {
+                datasource.close();
+            }
+        }
+        return _user;
+    }
+
+    public void setActiveUser(User user) {
+        _user = user;
+
+        UserDataSource datasource = null;
+        try {
+            datasource = new UserDataSource(this);
+            datasource.open();
+
+            /* ignore failure */
+            datasource.setActiveUser(user);
+        } finally {
+            datasource.close();
+        }
+    }
 }

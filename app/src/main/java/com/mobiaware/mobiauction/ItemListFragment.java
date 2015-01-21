@@ -14,53 +14,54 @@
 
 package com.mobiaware.mobiauction;
 
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
-import android.widget.ListAdapter;
 
-import com.mobiaware.mobiauction.items.Item;
-import com.mobiaware.mobiauction.users.User;
+import com.mobiaware.mobiauction.items.ItemContentProvider;
+import com.mobiaware.mobiauction.items.ItemDataSource;
+import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
 
-import java.util.ArrayList;
+public class ItemListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String ARG_TYPE = "type";
 
-public class ItemListFragment extends Fragment {
     private AbsListView _listView;
 
-    private ListAdapter _adapter;
+    private ItemListItemsAdapter _adapter;
 
-    public static ItemListFragment newInstance(User user, ArrayList<Item> items) {
+    private LoaderManager _loaderManager;
+    private CursorLoader _cursorLoader;
+
+    public static ItemListFragment newInstance(int type) {
         ItemListFragment fragment = new ItemListFragment();
-        Bundle args = new Bundle();
-        args.putParcelable(AuctionApplication.ARG_USER, user);
-        args.putParcelableArrayList(AuctionApplication.ARG_ITEMS, items);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
-    public ItemListFragment() {
-        // empty
+        Bundle args = new Bundle();
+        args.putInt(ARG_TYPE, type);
+        fragment.setArguments(args);
+
+        return fragment;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        User user;
-        ArrayList<Item> items;
-
+        int type = 0;
         if (getArguments() != null) {
-            user = getArguments().getParcelable(AuctionApplication.ARG_USER);
-            items = getArguments().getParcelableArrayList(AuctionApplication.ARG_ITEMS);
-        } else {
-            user = null;
-            items = new ArrayList<>();
+            type = getArguments().getInt(ARG_TYPE);
         }
 
-        _adapter = new ItemListItemsAdapter(getActivity(), items, user);
+        _adapter = new ItemListItemsAdapter(getActivity(), null);
+
+        _loaderManager = getLoaderManager();
+        _loaderManager.initLoader(type, null, this);
     }
 
     @Override
@@ -72,5 +73,44 @@ public class ItemListFragment extends Fragment {
         _listView.setAdapter(_adapter);
 
         return view;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case 1:
+                _cursorLoader =
+                        new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
+                                ItemDataSource.ALL_COLUMNS, ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 OR "
+                                + ItemSQLiteHelper.COLUMN_ISWATCHING + "=1", null,
+                                ItemSQLiteHelper.COLUMN_NUMBER);
+                break;
+            case 2:
+                _cursorLoader =
+                        new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
+                                ItemDataSource.ALL_COLUMNS, ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null,
+                                ItemSQLiteHelper.COLUMN_BIDCOUNT);
+                break;
+
+            default:
+                _cursorLoader =
+                        new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
+                                ItemDataSource.ALL_COLUMNS, null, null, null);
+        }
+        return _cursorLoader;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if (_adapter != null && cursor != null) {
+            _adapter.swapCursor(cursor);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        if (_adapter != null) {
+            _adapter.swapCursor(null);
+        }
     }
 }

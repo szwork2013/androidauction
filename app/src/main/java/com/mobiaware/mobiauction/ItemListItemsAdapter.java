@@ -15,79 +15,77 @@
 package com.mobiaware.mobiauction;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.mobiaware.mobiauction.items.Item;
+import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.users.User;
 
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Locale;
 
-public class ItemListItemsAdapter extends ArrayAdapter<Item> {
+public class ItemListItemsAdapter extends CursorAdapter {
     private final User _user;
-    private final String[] _bidLabels;
+    private final String[] _labels;
 
-    public ItemListItemsAdapter(Context context, ArrayList<Item> items, User user) {
-        super(context, 0, items);
+    public ItemListItemsAdapter(Context context, Cursor cursor) {
+        super(context, cursor, 0);
 
-        _user = user;
-        _bidLabels = context.getResources().getStringArray(R.array.label_bid_count);
+        _user = ((AuctionApplication) context.getApplicationContext()).getActiveUser();
+        _labels = context.getResources().getStringArray(R.array.label_bid_count);
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        Item item = getItem(position);
+    public View newView(Context context, Cursor cursor, ViewGroup parent) {
+        return LayoutInflater.from(context).inflate(R.layout.item_list_item, parent, false);
+    }
 
-        if (convertView == null) {
-            convertView =
-                    LayoutInflater.from(getContext()).inflate(R.layout.item_list_item, parent, false);
-        }
+    @Override
+    public void bindView(View view, Context context, Cursor cursor) {
+        Item item = ItemDataSource.cursorToItem(cursor);
 
-        ((TextView) convertView.findViewById(R.id.itemName)).setText(item.getName());
-        ((TextView) convertView.findViewById(R.id.itemNumber)).setText(item.getNumber());
+        ((TextView) view.findViewById(R.id.itemName)).setText(item.getName());
+        ((TextView) view.findViewById(R.id.itemNumber)).setText(item.getNumber());
 
         long bids = item.getBidCount();
         if (bids == 0) {
-            ((TextView) convertView.findViewById(R.id.itemBids)).setText(_bidLabels[0]);
+            ((TextView) view.findViewById(R.id.itemBids)).setText(_labels[0]);
         } else if (bids == 1) {
-            ((TextView) convertView.findViewById(R.id.itemBids)).setText(_bidLabels[1]);
+            ((TextView) view.findViewById(R.id.itemBids)).setText(_labels[1]);
         } else {
-            ((TextView) convertView.findViewById(R.id.itemBids)).setText(String.format(_bidLabels[2],
+            ((TextView) view.findViewById(R.id.itemBids)).setText(String.format(_labels[2],
                     Long.toString(item.getBidCount())));
         }
 
         NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
-        ((TextView) convertView.findViewById(R.id.itemPrice))
-                .setText(format.format(item.getCurPrice()));
-        ((TextView) convertView.findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
+        ((TextView) view.findViewById(R.id.itemPrice)).setText(format.format(item.getCurPrice()));
+        ((TextView) view.findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
 
         if (item.isBidding()) {
             if (item.getWinner().equals(_user.getBidder())) {
-                convertView.findViewById(R.id.itemWinning).setVisibility(ImageView.VISIBLE);
-                convertView.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
-                convertView.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+                view.findViewById(R.id.itemWinning).setVisibility(ImageView.VISIBLE);
+                view.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
+                view.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
             } else {
-                convertView.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
-                convertView.findViewById(R.id.itemLosing).setVisibility(ImageView.VISIBLE);
-                convertView.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+                view.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
+                view.findViewById(R.id.itemLosing).setVisibility(ImageView.VISIBLE);
+                view.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
             }
         } else if (item.isWatching()) {
-            convertView.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
-            convertView.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
-            convertView.findViewById(R.id.itemFavorite).setVisibility(ImageView.VISIBLE);
+            view.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
+            view.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
+            view.findViewById(R.id.itemFavorite).setVisibility(ImageView.VISIBLE);
         } else {
-            convertView.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
-            convertView.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
-            convertView.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+            view.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
+            view.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
+            view.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
         }
-
-        return convertView;
     }
 }

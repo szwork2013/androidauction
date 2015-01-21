@@ -18,32 +18,19 @@ import android.app.Activity;
 import android.os.Bundle;
 
 import com.mobiaware.mobiauction.users.User;
-import com.mobiaware.mobiauction.users.UserDataSource;
-
 
 public class MainActivity extends Activity {
-    private UserDataSource _userDatasource;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        _userDatasource = new UserDataSource(this);
-        _userDatasource.open();
-
-        User user = _userDatasource.getActiveUser();
+        User user = ((AuctionApplication) getApplicationContext()).getActiveUser();
         if (user != null) {
-            startActivity(AuctionActivity.newInstance(getApplicationContext(), user));
+            startActivity(AuctionActivity.newInstance(getApplicationContext()));
         } else {
             startActivity(LoginActivity.newInstance(getApplicationContext()));
         }
 
         finish();
-    }
-
-    @Override
-    protected void onDestroy() {
-        _userDatasource.close();
-        super.onDestroy();
     }
 }

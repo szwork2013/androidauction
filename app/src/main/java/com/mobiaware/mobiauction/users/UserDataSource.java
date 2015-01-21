@@ -21,6 +21,8 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 
+import com.mobiaware.mobiauction.utils.CloseUtils;
+
 public class UserDataSource {
     private static String[] ALL_COLUMNS = {UsersSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
             UsersSQLiteHelper.COLUMN_AUCTION, UsersSQLiteHelper.COLUMN_BIDDER,
@@ -42,25 +44,24 @@ public class UserDataSource {
         _databaseHelper.close();
     }
 
-    public User createUser(long uid, long auction, String bidder, String password, String firstName,
-                           String lastName) {
+    public User setActiveUser(User user) {
         _database.delete(UsersSQLiteHelper.TABLE_USERS, null, null);
 
         ContentValues values = new ContentValues();
-        values.put(UsersSQLiteHelper.COLUMN_UID, uid);
-        values.put(UsersSQLiteHelper.COLUMN_AUCTION, auction);
-        values.put(UsersSQLiteHelper.COLUMN_BIDDER, bidder);
-        values.put(UsersSQLiteHelper.COLUMN_PASSWORD, password);
-        values.put(UsersSQLiteHelper.COLUMN_FIRSTNAME, firstName);
-        values.put(UsersSQLiteHelper.COLUMN_LASTNAME, lastName);
+        values.put(UsersSQLiteHelper.COLUMN_UID, user.getUid());
+        values.put(UsersSQLiteHelper.COLUMN_AUCTION, user.getAuction());
+        values.put(UsersSQLiteHelper.COLUMN_BIDDER, user.getBidder());
+        values.put(UsersSQLiteHelper.COLUMN_PASSWORD, user.getPassword());
+        values.put(UsersSQLiteHelper.COLUMN_FIRSTNAME, user.getFirstName());
+        values.put(UsersSQLiteHelper.COLUMN_LASTNAME, user.getLastName());
 
         long insertId = _database.insert(UsersSQLiteHelper.TABLE_USERS, null, values);
 
-        if (insertId > 0) {
-            return getActiveUser();
+        if (insertId < 0) {
+            return null;
         }
 
-        return null;
+        return user;
     }
 
     public User getActiveUser() {
@@ -76,9 +77,7 @@ public class UserDataSource {
             cursor.moveToLast(); // use last entry for login
             return cursorToUser(cursor);
         } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
+            CloseUtils.closeQuietly(cursor);
         }
     }
 

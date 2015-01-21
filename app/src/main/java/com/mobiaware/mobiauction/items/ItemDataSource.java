@@ -15,18 +15,15 @@
 package com.mobiaware.mobiauction.items;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-import java.util.ArrayList;
-
 public class ItemDataSource {
-    private static String[] ALL_COLUMNS = {ItemSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
+    public static String[] ALL_COLUMNS = {ItemSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
             ItemSQLiteHelper.COLUMN_NUMBER, ItemSQLiteHelper.COLUMN_NAME,
             ItemSQLiteHelper.COLUMN_DESCRIPTION, ItemSQLiteHelper.COLUMN_CATEGORY,
             ItemSQLiteHelper.COLUMN_SELLER, ItemSQLiteHelper.COLUMN_VALPRICE,
@@ -62,7 +59,19 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_URL, url);
         values.put(ItemSQLiteHelper.COLUMN_MULTI, multi);
 
-        Uri uri = _contentResolver.insert(ItemContentProvider.CONTENT_URI, values);
+        _contentResolver.insert(ItemContentProvider.CONTENT_URI, values);
+    }
+
+    public void updateItem(long uid, double curPrice, String winner, long bidCount, long watchCount) {
+        ContentValues values = new ContentValues();
+        values.put(ItemSQLiteHelper.COLUMN_UID, uid);
+        values.put(ItemSQLiteHelper.COLUMN_CURPRICE, curPrice);
+        values.put(ItemSQLiteHelper.COLUMN_WINNER, winner);
+        values.put(ItemSQLiteHelper.COLUMN_BIDCOUNT, bidCount);
+        values.put(ItemSQLiteHelper.COLUMN_WATCHCOUNT, watchCount);
+
+        Uri uri = ContentUris.withAppendedId(ItemContentProvider.CONTENT_URI, uid);
+        _contentResolver.update(uri, values, null, null);
     }
 
     public long setIsBidding(long uid) {
@@ -70,7 +79,7 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_ISBIDDING, 1);
 
         return _contentResolver.update(ItemContentProvider.CONTENT_URI, values,
-                ItemSQLiteHelper.COLUMN_UID + "=?", new String[] {Long.toString(uid)});
+                ItemSQLiteHelper.COLUMN_UID + "=?", new String[]{Long.toString(uid)});
     }
 
     public long setIsWatching(long uid) {
@@ -78,116 +87,10 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_ISWATCHING, 1);
 
         return _contentResolver.update(ItemContentProvider.CONTENT_URI, values,
-                ItemSQLiteHelper.COLUMN_UID + "=?", new String[] {Long.toString(uid)});
+                ItemSQLiteHelper.COLUMN_UID + "=?", new String[]{Long.toString(uid)});
     }
 
-
-    public ArrayList<Item> getItems() {
-        ArrayList<Item> items = new ArrayList<>();
-
-        Cursor cursor = null;
-        try {
-            cursor =
-                    _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS, null, null,
-                            ItemSQLiteHelper.COLUMN_NUMBER);
-
-
-            if (cursor != null) {
-                cursor.moveToFirst();
-                while (!cursor.isAfterLast()) {
-                    items.add(cursorToItem(cursor));
-                    cursor.moveToNext();
-                }
-            }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-
-        return items;
-    }
-
-    public ArrayList<Item> getMyItems() {
-        ArrayList<Item> items = new ArrayList<>();
-
-        Cursor cursor = null;
-        try {
-            cursor =
-                    _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
-                            ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 OR " + ItemSQLiteHelper.COLUMN_ISWATCHING
-                                    + "=1", null, ItemSQLiteHelper.COLUMN_NUMBER);
-
-            if (cursor != null) {
-                cursor.moveToFirst();
-                while (!cursor.isAfterLast()) {
-                    items.add(cursorToItem(cursor));
-                    cursor.moveToNext();
-                }
-            }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-
-        return items;
-    }
-
-    public ArrayList<Item> getLowBidItems() {
-        ArrayList<Item> items = new ArrayList<>();
-
-        Cursor cursor = null;
-        try {
-            cursor =
-                    _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
-                            ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null, ItemSQLiteHelper.COLUMN_BIDCOUNT);
-
-            if (cursor != null) {
-                cursor.moveToFirst();
-                while (!cursor.isAfterLast()) {
-                    items.add(cursorToItem(cursor));
-                    cursor.moveToNext();
-                }
-            }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-
-        return items;
-    }
-
-    public ArrayList<Item> getSearchItems(String s) {
-        ArrayList<Item> items = new ArrayList<>();
-
-        Cursor cursor = null;
-        try {
-            cursor =
-                    _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
-                            ItemSQLiteHelper.COLUMN_NUMBER + " LIKE '%" + s + "%' OR "
-                                    + ItemSQLiteHelper.COLUMN_NAME + " LIKE '%" + s + "%' OR "
-                                    + ItemSQLiteHelper.COLUMN_DESCRIPTION + " LIKE '%" + s + "%'", null,
-                            ItemSQLiteHelper.COLUMN_NUMBER);
-
-            if (cursor != null) {
-                cursor.moveToFirst();
-                while (!cursor.isAfterLast()) {
-                    items.add(cursorToItem(cursor));
-                    cursor.moveToNext();
-                }
-            }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
-        }
-
-        return items;
-    }
-
-    private Item cursorToItem(Cursor cursor) {
+    public static Item cursorToItem(Cursor cursor) {
         return new Item(cursor.getLong(0), cursor.getString(1), cursor.getString(2),
                 cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getDouble(6),
                 cursor.getDouble(7), cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10),
