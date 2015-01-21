@@ -65,7 +65,7 @@ public class ItemSQLiteHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.w(ItemSQLiteHelper.class.getName(), "Upgrading database from version " + oldVersion
                 + " to " + newVersion + ", which will destroy all old data");
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ITEMS);
+        db.execSQL("drop table if exists " + TABLE_ITEMS);
         onCreate(db);
     }
 }

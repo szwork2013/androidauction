@@ -88,7 +88,9 @@ public class ItemContentProvider extends ContentProvider {
         int uriType = URI_MATCHER.match(uri);
         switch (uriType) {
             case ITEMS:
-                insertId = database.insertWithOnConflict(ItemSQLiteHelper.TABLE_ITEMS, "", values, SQLiteDatabase.CONFLICT_REPLACE);
+                insertId =
+                        database.insertWithOnConflict(ItemSQLiteHelper.TABLE_ITEMS, "", values,
+                                SQLiteDatabase.CONFLICT_REPLACE);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -117,7 +119,7 @@ public class ItemContentProvider extends ContentProvider {
             case ITEMS_ID:
                 String id = uri.getLastPathSegment();
                 database.delete(ItemSQLiteHelper.TABLE_ITEMS, ItemSQLiteHelper.COLUMN_UID + " = " + id
-                        + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
+                        + (!TextUtils.isEmpty(selection) ? " and (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -143,8 +145,8 @@ public class ItemContentProvider extends ContentProvider {
             case ITEMS_ID:
                 String id = uri.getLastPathSegment();
                 database
-                        .update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID + " = " + id
-                                + (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
+                        .update(ItemSQLiteHelper.TABLE_ITEMS, values, ItemSQLiteHelper.COLUMN_UID + "=" + id
+                                + (!TextUtils.isEmpty(selection) ? " and (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
