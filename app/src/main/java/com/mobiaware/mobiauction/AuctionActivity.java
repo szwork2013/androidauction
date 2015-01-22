@@ -73,16 +73,25 @@ public class AuctionActivity extends ActionBarActivity implements
     public void onNavigationDrawerItemSelected(int position) {
         Fragment fragment;
 
-        switch (position) {
+    switch (position) {
             case 0:
+                setTitle(getString(R.string.title_listitems));
+                fragment = ItemListFragment.newInstance(0, null);
+                break;
             case 1:
+                setTitle(getString(R.string.title_listmyitems));
+                fragment = ItemListFragment.newInstance(1, null);
+                break;
             case 2:
-                fragment = ItemListFragment.newInstance(position, null);
+                setTitle(getString(R.string.title_listlowbids));
+                fragment = ItemListFragment.newInstance(2, null);
                 break;
             case 3:
+                setTitle(getString(R.string.title_fund));
                 fragment = FundFragment.newInstance();
                 break;
             default:
+                setTitle(getString(R.string.title_listitems));
                 fragment = ItemListFragment.newInstance(0, null);
         }
 

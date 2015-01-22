@@ -44,5 +44,5 @@
     <string name="prompt_yes">Yes</string>
     <string name="prompt_no">No</string>
 
-
+    <string name="search_hint">Keywords or Item#</string>
 </resources>

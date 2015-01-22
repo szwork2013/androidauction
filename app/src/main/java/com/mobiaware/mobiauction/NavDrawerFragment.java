@@ -17,6 +17,8 @@ package com.mobiaware.mobiauction;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -33,6 +35,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -119,8 +122,10 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         _drawerLayout.setDrawerShadow(R.drawable.ic_drawer_shadow, GravityCompat.START);
 
         ActionBar actionBar = getActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        //actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
+        actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#937EB6")));
+        actionBar.setIcon(R.drawable.ic_launcher);
 
         _drawerToggle =
                 new ActionBarDrawerToggle(getActivity(), _drawerLayout, R.drawable.ic_drawer,
@@ -223,7 +228,7 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         _searchView.setFocusable(false);
         _searchView.setFocusableInTouchMode(true);
         _searchView.clearFocus();
-
+        _searchView.setQueryHint(getString(R.string.search_hint));
         _searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
@@ -233,7 +238,6 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
                 return false;
             }
         });
-
 
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -251,7 +255,7 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        actionBar.setTitle(R.string.app_name);
+        //actionBar.setTitle(R.string.app_name);
     }
 
     private ActionBar getActionBar() {
