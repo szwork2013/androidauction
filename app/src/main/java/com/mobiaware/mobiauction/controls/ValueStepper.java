@@ -183,7 +183,9 @@ public class ValueStepper extends LinearLayout {
     }
 
     private void updateTextField() {
-        NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
-        _valueText.setText(format.format(_value));
+        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.US);
+        nf.setMinimumFractionDigits(0);
+
+        _valueText.setText(nf.format(_value));
     }
 }

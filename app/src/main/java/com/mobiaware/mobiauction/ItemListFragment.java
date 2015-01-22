@@ -14,7 +14,6 @@
 
 package com.mobiaware.mobiauction;
 
-import android.app.ProgressDialog;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -28,13 +27,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
 import com.mobiaware.mobiauction.items.ItemContentProvider;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
 import com.mobiaware.mobiauction.users.User;
-import com.mobiaware.mobiauction.utils.Preconditions;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -222,6 +221,12 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
         protected void onPostExecute(Boolean success) {
             _getItemsTask = null;
             _swipeContainer.setRefreshing(false);
+
+            if (success) {
+                Toast.makeText(getActivity(), getString(R.string.refresh_success), Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getActivity(), getString(R.string.refresh_failed), Toast.LENGTH_SHORT).show();
+            }
         }
 
         private void fetchItems() throws IOException, JSONException {

@@ -64,8 +64,10 @@ public class ItemListItemsAdapter extends CursorAdapter {
                     Long.toString(item.getBidCount())));
         }
 
-        NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
-        ((TextView) view.findViewById(R.id.itemPrice)).setText(format.format(Math.floor(item.getCurPrice())));
+        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.US);
+        nf.setMinimumFractionDigits(0);
+
+        ((TextView) view.findViewById(R.id.itemPrice)).setText(nf.format(item.getCurPrice()));
         ((TextView) view.findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
 
         if (item.isBidding()) {

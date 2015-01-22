@@ -77,8 +77,10 @@ public class FundFragment extends Fragment {
 
         double value = ((AuctionApplication) getActivity().getApplicationContext()).getFundValue();
 
-        NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
-        _fundValue.setText(format.format(Math.floor(value)));
+        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.US);
+        nf.setMinimumFractionDigits(0);
+
+        _fundValue.setText(nf.format(value));
 
         view.findViewById(R.id.twentyFiveFund).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -157,8 +159,10 @@ public class FundFragment extends Fragment {
             if (value > 0.0) {
                 Toast.makeText(getActivity(), getString(R.string.fund_success), Toast.LENGTH_SHORT).show();
 
-                NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
-                _fundValue.setText(format.format(Math.floor(value)));
+                NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.US);
+                nf.setMinimumFractionDigits(0);
+
+                _fundValue.setText(nf.format(value));
 
                 ((AuctionApplication) getActivity().getApplicationContext()).setFundValue(value);
             } else {
