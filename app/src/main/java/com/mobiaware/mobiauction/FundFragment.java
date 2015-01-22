@@ -14,6 +14,8 @@
 
 package com.mobiaware.mobiauction;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -113,15 +115,35 @@ public class FundFragment extends Fragment {
         return view;
     }
 
-    private void sendFunds(double fundPrice) {
+    private void sendFunds(final double fundPrice) {
         if (_fundTask != null) {
             return;
         }
 
-        User user = ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
 
-        _fundTask = new FundTask(user, fundPrice);
-        _fundTask.execute();
+        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.US);
+        nf.setMinimumFractionDigits(0);
+
+
+        String message = String.format(getString(R.string.fund_prompt), nf.format(fundPrice));
+        alertDialogBuilder.setMessage(message).setCancelable(false)
+                .setPositiveButton(R.string.prompt_yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        User user =
+                                ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();
+
+                        _fundTask = new FundTask(user, fundPrice);
+                        _fundTask.execute();
+                    }
+                }).setNegativeButton(R.string.prompt_no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
     public class FundTask extends AsyncTask<String, Void, Double> {

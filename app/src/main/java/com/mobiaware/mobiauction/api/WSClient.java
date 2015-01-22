@@ -53,6 +53,9 @@ public class WSClient {
                     if (_callbacks != null) {
                         _callbacks.onItemMessage(payload);
                     }
+
+
+                    Log.d(TAG, payload);
                 }
 
                 @Override

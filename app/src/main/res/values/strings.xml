@@ -34,11 +34,15 @@
 
     <string name="list_no_results">No Results</string>
 
+    <string name="fund_prompt">Do you want to give %1$s?\n\nThis is in addition to any previous amount.</string>
     <string name="fund_success">Thanks for the contribution!</string>
     <string name="fund_failed">There was a problem updating your fund amount. Please try again.</string>
 
     <string name="refresh_success">Items successfully updated.</string>
     <string name="refresh_failed">There was a problem updating the items.</string>
+
+    <string name="prompt_yes">Yes</string>
+    <string name="prompt_no">No</string>
 
 
 </resources>
