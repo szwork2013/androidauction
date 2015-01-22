@@ -4,7 +4,7 @@
     xmlns:yourapp="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_search"
-        android:title="@string/search_title"
+        android:title="@string/navigation_drawer_search_title"
         android:icon="@android:drawable/ic_menu_search"
         android:focusable="false"
         yourapp:showAsAction="always"

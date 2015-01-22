@@ -117,7 +117,7 @@ public class FundFragment extends Fragment {
         }
 
         User user = ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();
-        
+
         _fundTask = new FundTask(user, fundPrice);
         _fundTask.execute();
     }

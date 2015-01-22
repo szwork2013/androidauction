@@ -56,7 +56,6 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
     private LoaderManager _loaderManager;
     private CursorLoader _cursorLoader;
 
-    private ProgressDialog _progressDlg;
     private GetItemsTask _getItemsTask;
 
     private ItemDataSource _datasource;
@@ -109,11 +108,9 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
         _swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                _swipeContainer.setRefreshing(false); // hide right away and use the progress dlg
                 refreshItems();
             }
         });
-
 
         _listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
@@ -190,39 +187,26 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
         if (_getItemsTask != null) {
             return;
         }
+
         User user = ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();
 
-        showProgress();
-        _getItemsTask = new GetItemsTask();
-        _getItemsTask.execute(new String[]{user.getBidder(), user.getPassword()});
-    }
-
-    private void showProgress() {
-        hideProgress();
-
-        _progressDlg = new ProgressDialog(getActivity());
-        _progressDlg.setMessage(getString(R.string.progress_refreshing));
-        _progressDlg.setIndeterminate(true);
-        _progressDlg.show();
-    }
-
-    private void hideProgress() {
-        if (_progressDlg != null && _progressDlg.isShowing()) {
-            _progressDlg.dismiss();
-            _progressDlg = null;
-        }
+        _getItemsTask = new GetItemsTask(user);
+        _getItemsTask.execute();
     }
 
     public class GetItemsTask extends AsyncTask<String, Void, Boolean> {
+        private final User _user;
+
+        public GetItemsTask(User user) {
+            _user = user;
+        }
+
         @Override
         protected Boolean doInBackground(String... params) {
-            Preconditions
-                    .checkArgument(params.length == 2, "Requires bidder and password as parameters.");
-
             try {
                 fetchItems();
-                fetchBids(params[0], params[1]);
-                fetchWatches(params[0], params[1]);
+                fetchBids(_user.getBidder(), _user.getPassword());
+                fetchWatches(_user.getBidder(), _user.getPassword());
             } catch (IOException e) {
                 Log.e(TAG, "Error fetching auction items.", e);
                 return false;
@@ -237,13 +221,7 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
         @Override
         protected void onPostExecute(Boolean success) {
             _getItemsTask = null;
-            hideProgress();
-        }
-
-        @Override
-        protected void onCancelled() {
-            _getItemsTask = null;
-            hideProgress();
+            _swipeContainer.setRefreshing(false);
         }
 
         private void fetchItems() throws IOException, JSONException {

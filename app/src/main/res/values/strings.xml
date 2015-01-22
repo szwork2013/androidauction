@@ -2,9 +2,11 @@
 <resources>
 
     <string name="app_name">MobiAuction</string>
+
     <string name="title_activity_main">MobiAuction</string>
     <string name="title_activity_login">MobiAuction</string>
     <string name="title_activity_items">MobiAuction</string>
+
     <string name="prompt_bidder">Bidder #</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign In</string>
@@ -13,9 +15,7 @@
     <string name="error_invalid_password">This Password is too short.</string>
     <string name="error_incorrect_password">The Password is not valid.</string>
     <string name="error_field_required">This field is required.</string>
-    <string name="progress_refreshing">Updating...</string>
     <string name="progresss_authenticating">Authenticating...</string>
-    <string name="progresss_funding">Funding...</string>
 
     <string-array name="label_bid_count">
         <item>"No bids"</item>
@@ -27,11 +27,12 @@
     <string name="title_listmyitems">My Items</string>
     <string name="title_listlowbids">Low Bids</string>
     <string name="title_fund">Fund A Cause</string>
+
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="navigation_drawer_search_title">Search</string>
+
     <string name="list_no_results">No Results</string>
-    <string name="search_title">Search</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="fund_success">Thanks for the contribution!</string>
     <string name="fund_failed">There was a problem updating your fund amount. Please try again.</string>
