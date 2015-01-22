@@ -6,21 +6,28 @@
     android:focusable="true"
     android:focusableInTouchMode="true">
 
-    <TextView
+    <LinearLayout
+        android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Name"
-        android:id="@+id/itemName"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true" />
+        android:id="@+id/itemRow1">
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Name"
+            android:id="@+id/itemName"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true" />
+    </LinearLayout>
 
     <RelativeLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/itemName"
-        android:id="@+id/itemRow">
+        android:layout_below="@+id/itemRow1"
+        android:id="@+id/itemRow2">
 
         <RelativeLayout
             android:orientation="horizontal"
@@ -43,7 +50,7 @@
                 android:textAppearance="?android:attr/textAppearanceMedium"
                 android:text="Number"
                 android:id="@+id/itemNumber"
-                android:layout_toRightOf="@+id/itemNumberLbl"/>
+                android:layout_toRightOf="@+id/itemNumberLbl" />
         </RelativeLayout>
 
         <TextView
@@ -60,8 +67,8 @@
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/bidRow"
-        android:layout_below="@+id/itemRow">
+        android:id="@+id/itemRow3"
+        android:layout_below="@+id/itemRow2">
 
         <TextView
             android:layout_width="wrap_content"

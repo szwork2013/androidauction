@@ -17,6 +17,7 @@ package com.mobiaware.mobiauction;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -70,7 +71,21 @@ public class AuctionActivity extends ActionBarActivity implements
 
     @Override
     public void onNavigationDrawerItemSelected(int position) {
-        ItemListFragment fragment = ItemListFragment.newInstance(position, null);
+        Fragment fragment;
+
+        switch (position) {
+            case 0:
+            case 1:
+            case 2:
+                fragment = ItemListFragment.newInstance(position, null);
+                break;
+            case 3:
+                fragment = FundFragment.newInstance();
+                break;
+            default:
+                fragment = ItemListFragment.newInstance(0, null);
+        }
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragment).commit();

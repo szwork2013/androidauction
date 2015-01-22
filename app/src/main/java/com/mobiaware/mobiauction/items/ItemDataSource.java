@@ -79,7 +79,7 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_ISBIDDING, 1);
 
         return _contentResolver.update(ItemContentProvider.CONTENT_URI, values,
-                ItemSQLiteHelper.COLUMN_UID + "=?", new String[] {Long.toString(uid)});
+                ItemSQLiteHelper.COLUMN_UID + "=?", new String[]{Long.toString(uid)});
     }
 
     public long setIsWatching(long uid) {
@@ -87,7 +87,7 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_ISWATCHING, 1);
 
         return _contentResolver.update(ItemContentProvider.CONTENT_URI, values,
-                ItemSQLiteHelper.COLUMN_UID + "=?", new String[] {Long.toString(uid)});
+                ItemSQLiteHelper.COLUMN_UID + "=?", new String[]{Long.toString(uid)});
     }
 
     public static Item cursorToItem(Cursor cursor) {

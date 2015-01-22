@@ -76,6 +76,10 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
         return fragment;
     }
 
+    public ItemListFragment() {
+        // required empty public constructor
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,7 +117,8 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
 
         _listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {}
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
@@ -181,7 +186,6 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
     }
 
 
-
     private void refreshItems() {
         if (_getItemsTask != null) {
             return;
@@ -190,7 +194,7 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
 
         showProgress();
         _getItemsTask = new GetItemsTask();
-        _getItemsTask.execute(new String[] {user.getBidder(), user.getPassword()});
+        _getItemsTask.execute(new String[]{user.getBidder(), user.getPassword()});
     }
 
     private void showProgress() {

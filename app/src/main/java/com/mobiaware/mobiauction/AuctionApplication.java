@@ -21,6 +21,7 @@ import com.mobiaware.mobiauction.users.UserDataSource;
 
 public class AuctionApplication extends Application {
     private User _user;
+    private double _fundValue;
 
     public User getActiveUser() {
         if (_user == null) {
@@ -45,10 +46,18 @@ public class AuctionApplication extends Application {
             datasource = new UserDataSource(this);
             datasource.open();
 
-            /* ignore failure */
+      /* ignore failure */
             datasource.setActiveUser(user);
         } finally {
             datasource.close();
         }
+    }
+
+    public double getFundValue() {
+        return _fundValue;
+    }
+
+    public void setFundValue(double fundValue) {
+        _fundValue = fundValue;
     }
 }

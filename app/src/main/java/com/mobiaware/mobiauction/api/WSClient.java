@@ -17,11 +17,6 @@ package com.mobiaware.mobiauction.api;
 import android.app.Activity;
 import android.util.Log;
 
-import com.mobiaware.mobiauction.items.Item;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
@@ -79,5 +74,4 @@ public class WSClient {
     public static interface WebsocketCallbacks {
         void onItemMessage(String payload);
     }
-
 }

@@ -98,6 +98,7 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         navDrawerItems.add(new NavDrawerItem(getString(R.string.title_listitems), R.drawable.ic_items));
         navDrawerItems.add(new NavDrawerItem(getString(R.string.title_listmyitems), R.drawable.ic_myitems));
         navDrawerItems.add(new NavDrawerItem(getString(R.string.title_listlowbids), R.drawable.ic_lowitems));
+        navDrawerItems.add(new NavDrawerItem(getString(R.string.title_fund), R.drawable.ic_fund));
 
         adapter = new NavDrawerItemsAdapter(getActivity(),
                 navDrawerItems);
@@ -232,7 +233,6 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
                 return false;
             }
         });
-
 
 
         super.onCreateOptionsMenu(menu, inflater);

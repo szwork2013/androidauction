@@ -44,7 +44,7 @@ public class ItemListItemsAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return LayoutInflater.from(context).inflate(R.layout.item_list_item, parent, false);
+        return LayoutInflater.from(context).inflate(R.layout.fragment_item_list_item, parent, false);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class ItemListItemsAdapter extends CursorAdapter {
         }
 
         NumberFormat format = NumberFormat.getCurrencyInstance(Locale.US);
-        ((TextView) view.findViewById(R.id.itemPrice)).setText(format.format(item.getCurPrice()));
+        ((TextView) view.findViewById(R.id.itemPrice)).setText(format.format(Math.floor(item.getCurPrice())));
         ((TextView) view.findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
 
         if (item.isBidding()) {
