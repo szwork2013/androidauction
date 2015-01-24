@@ -27,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
@@ -101,6 +102,13 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
 
         _listView = (AbsListView) view.findViewById(android.R.id.list);
         _listView.setEmptyView(view.findViewById(android.R.id.empty));
+        _listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getActivity(), getString(R.string.fund_success), Toast.LENGTH_SHORT).show();
+            }
+        });
+
         _listView.setAdapter(_adapter);
 
         _swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipecontainer);

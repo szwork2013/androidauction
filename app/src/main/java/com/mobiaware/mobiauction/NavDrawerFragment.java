@@ -35,7 +35,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
 
 import java.util.ArrayList;
@@ -49,21 +48,15 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
     private ActionBarDrawerToggle _drawerToggle;
 
     private DrawerLayout _drawerLayout;
-    private ListView _drawerListView;
-    private View _fragmentContainerView;
+    private View _containerView;
+    private ListView _listView;
+    private SearchView _searchView;
+
+    private NavDrawerItemsAdapter _adapter;
 
     private int _currentSelectedPosition = 0;
     private boolean _fromSavedInstanceState;
     private boolean _userLearnedDrawer;
-
-    private SearchView _searchView;
-
-    private NavDrawerItemsAdapter adapter;
-
-
-    public NavDrawerFragment() {
-        // empty
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,9 +81,9 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        _drawerListView =
+        _listView =
                 (ListView) inflater.inflate(R.layout.fragment_nav_drawer, container, false);
-        _drawerListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        _listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 selectItem(position);
@@ -103,26 +96,26 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         navDrawerItems.add(new NavDrawerItem(getString(R.string.title_listlowbids), R.drawable.ic_lowitems));
         navDrawerItems.add(new NavDrawerItem(getString(R.string.title_fund), R.drawable.ic_fund));
 
-        adapter = new NavDrawerItemsAdapter(getActivity(),
+        _adapter = new NavDrawerItemsAdapter(getActivity(),
                 navDrawerItems);
-        _drawerListView.setAdapter(adapter);
+        _listView.setAdapter(_adapter);
 
-        _drawerListView.setItemChecked(_currentSelectedPosition, true);
-        return _drawerListView;
+        _listView.setItemChecked(_currentSelectedPosition, true);
+        return _listView;
     }
 
     public boolean isDrawerOpen() {
-        return _drawerLayout != null && _drawerLayout.isDrawerOpen(_fragmentContainerView);
+        return _drawerLayout != null && _drawerLayout.isDrawerOpen(_containerView);
     }
 
     public void setUp(int fragmentId, DrawerLayout drawerLayout) {
-        _fragmentContainerView = getActivity().findViewById(fragmentId);
-        _drawerLayout = drawerLayout;
+        _containerView = getActivity().findViewById(fragmentId);
 
+        _drawerLayout = drawerLayout;
         _drawerLayout.setDrawerShadow(R.drawable.ic_drawer_shadow, GravityCompat.START);
 
         ActionBar actionBar = getActionBar();
-        //actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
         actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#937EB6")));
         actionBar.setIcon(R.drawable.ic_launcher);
@@ -158,7 +151,7 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
                 };
 
         if (!_userLearnedDrawer && !_fromSavedInstanceState) {
-            _drawerLayout.openDrawer(_fragmentContainerView);
+            _drawerLayout.openDrawer(_containerView);
         }
 
         _drawerLayout.post(new Runnable() {
@@ -173,11 +166,11 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
 
     private void selectItem(int position) {
         _currentSelectedPosition = position;
-        if (_drawerListView != null) {
-            _drawerListView.setItemChecked(position, true);
+        if (_listView != null) {
+            _listView.setItemChecked(position, true);
         }
         if (_drawerLayout != null) {
-            _drawerLayout.closeDrawer(_fragmentContainerView);
+            _drawerLayout.closeDrawer(_containerView);
         }
         if (_callbacks != null) {
             _callbacks.onNavigationDrawerItemSelected(position);
@@ -255,7 +248,6 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         ActionBar actionBar = getActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-        //actionBar.setTitle(R.string.app_name);
     }
 
     private ActionBar getActionBar() {
