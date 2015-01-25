@@ -29,7 +29,7 @@ import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.users.User;
 import com.mobiaware.mobiauction.utils.FormatUtils;
 
-class ItemListItemsAdapter extends CursorAdapter {
+public class ItemListItemsAdapter extends CursorAdapter {
     private final User _user;
     private final String[] _labels;
 

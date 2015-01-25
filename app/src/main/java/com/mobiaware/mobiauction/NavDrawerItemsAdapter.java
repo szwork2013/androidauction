@@ -25,7 +25,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-class NavDrawerItemsAdapter extends ArrayAdapter<NavDrawerItem> {
+public class NavDrawerItemsAdapter extends ArrayAdapter<NavDrawerItem> {
     public NavDrawerItemsAdapter(Context context, ArrayList<NavDrawerItem> items) {
         super(context, 0, items);
     }

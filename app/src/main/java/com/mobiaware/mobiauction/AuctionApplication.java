@@ -19,7 +19,7 @@ import android.app.Application;
 import com.mobiaware.mobiauction.users.User;
 import com.mobiaware.mobiauction.users.UserDataSource;
 
-class AuctionApplication extends Application {
+public class AuctionApplication extends Application {
     private User _user;
     private double _fundValue;
 

@@ -14,7 +14,7 @@
 
 package com.mobiaware.mobiauction;
 
-class NavDrawerItem {
+public class NavDrawerItem {
     private final String _title;
     private final int _icon;
 
