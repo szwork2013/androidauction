@@ -20,6 +20,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.CancellationSignal;
 import android.provider.BaseColumns;
 
 public class ItemDataSource {
@@ -72,6 +73,13 @@ public class ItemDataSource {
 
         Uri uri = ContentUris.withAppendedId(ItemContentProvider.CONTENT_URI, uid);
         _contentResolver.update(uri, values, null, null);
+    }
+
+    public Item getItem(long uid) {
+        Uri uri = ContentUris.withAppendedId(ItemContentProvider.CONTENT_URI, uid);
+        Cursor cursor= _contentResolver.query(uri, ALL_COLUMNS, null, null, null, null);
+        cursor.moveToFirst();
+        return cursorToItem(cursor);
     }
 
     public long setIsBidding(long uid) {

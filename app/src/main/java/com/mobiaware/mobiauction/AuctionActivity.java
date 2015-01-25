@@ -27,7 +27,9 @@ import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.items.Item;
 
 public class AuctionActivity extends Activity implements
-        NavDrawerFragment.NavigationDrawerCallbacks, ItemListFragment.ListItemCallbacks, WSClient.WebsocketCallbacks {
+        NavDrawerFragment.NavigationDrawerCallbacks, ItemListFragment.ListItemCallbacks, WSClient.OnMessageListener {
+    private static final String FRAGMENT_TAG = "ITEMLISTFRAGMENT";
+
     private WSClient _ws;
 
     public static Intent newInstance(Context context) {
@@ -52,21 +54,18 @@ public class AuctionActivity extends Activity implements
     @Override
     protected void onResume() {
         super.onResume();
-
         _ws.start();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
         _ws.stop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         _ws.stop();
     }
 
@@ -98,7 +97,7 @@ public class AuctionActivity extends Activity implements
 
            FragmentManager fragmentManager = getFragmentManager();
            fragmentManager.beginTransaction()
-                   .replace(R.id.container, fragment).commit();
+                   .replace(R.id.container, fragment, FRAGMENT_TAG).commit();
        }
     }
 
@@ -113,22 +112,21 @@ public class AuctionActivity extends Activity implements
 
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment).commit();
+                .replace(R.id.container, fragment, FRAGMENT_TAG).commit();
     }
 
     @Override
-    public void onItemMessage(String payload) {
-        // try {
-        // JSONObject object = new JSONObject(payload);
-        // _datasource.createItem(object.getLong("uid"), object.getString("itemNumber"),
-        // object.getString("name"), object.getString("description"), object.getString("category"),
-        // object.getString("seller"), object.getDouble("valPrice"), object.getDouble("minPrice"),
-        // object.getDouble("incPrice"), object.getDouble("curPrice"),
-        // object.optString("winner", ""), object.optLong("bidCount", 0),
-        // object.optLong("watchCount", 0), object.optString("url", ""), object.getBoolean("multi"));
-        // } catch (JSONException e) {
-        // Log.e(TAG, "Error fetching auction items.", e);
-        // }
+    public void onItemMessageReceived() {
+        FragmentManager fragmentManager = getFragmentManager();
+        Fragment myFragment = fragmentManager.findFragmentByTag(FRAGMENT_TAG);
+        if (myFragment.isVisible()) {
+            ((ItemListFragment)myFragment).refreshABC();
+        }
+    }
+
+    @Override
+    public void onFundMessageReceived() {
+        // ignore
     }
 
     @Override

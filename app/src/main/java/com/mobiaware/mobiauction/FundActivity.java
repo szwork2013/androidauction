@@ -28,6 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
+import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.controls.ValueStepper;
 import com.mobiaware.mobiauction.users.User;
 import com.mobiaware.mobiauction.utils.FormatUtils;
@@ -37,12 +38,14 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class FundActivity extends Activity {
+public class FundActivity extends Activity implements WSClient.OnMessageListener {
     private static final String TAG = FundActivity.class.getName();
 
     private static final double FUND_VALUE_ONE = 25.0;
     private static final double FUND_VALUE_TWO = 50.0;
     private static final double FUND_VALUE_THREE = 100.0;
+
+    private WSClient _ws;
 
     private TextView _fundValueTextView;
     private ValueStepper _fundValueStepper;
@@ -102,6 +105,26 @@ public class FundActivity extends Activity {
                 sendFunds(_fundValueStepper.getValue());
             }
         });
+
+        _ws = new WSClient(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        _ws.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        _ws.stop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        _ws.stop();
     }
 
     private void sendFunds(final double fundPrice) {
@@ -127,6 +150,17 @@ public class FundActivity extends Activity {
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    @Override
+    public void onItemMessageReceived() {
+        // ignore
+    }
+
+    @Override
+    public void onFundMessageReceived() {
+        double fundValue = ((AuctionApplication) getApplicationContext()).getFundValue();
+        _fundValueTextView.setText(FormatUtils.valueToString(fundValue));
     }
 
     private class FundTask extends AsyncTask<String, Void, Double> {
