@@ -15,15 +15,15 @@
 package com.mobiaware.mobiauction;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,8 +37,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class FundFragment extends Fragment {
-    private static final String TAG = FundFragment.class.getName();
+public class FundActivity extends ActionBarActivity {
+    private static final String TAG = FundActivity.class.getName();
 
     private static final double FUND_VALUE_ONE = 25.0;
     private static final double FUND_VALUE_TWO = 50.0;
@@ -51,67 +51,57 @@ public class FundFragment extends Fragment {
 
     private FundTask _fundTask;
 
-    public static FundFragment newInstance() {
-        FundFragment fragment = new FundFragment();
-
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-
-        return fragment;
+    public static Intent newInstance(Context context) {
+        return new Intent(context, FundActivity.class);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        _user = ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();
-    }
+        setContentView(R.layout.activity_fund);
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_fund, container, false);
+        _user = ((AuctionApplication) getApplicationContext()).getActiveUser();
 
-        _fundValueStepper = (ValueStepper) view.findViewById(R.id.fundValueStepper);
+        _fundValueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
         _fundValueStepper.setMinimum(5);
         _fundValueStepper.setStep(5);
         _fundValueStepper.setMaximum(1000);
         _fundValueStepper.setValue(5);
 
-        _fundValueTextView = ((TextView) view.findViewById(R.id.fundValue));
+        _fundValueTextView = ((TextView) findViewById(R.id.fundValue));
         _fundValueTextView.setTextColor(Color.rgb(0, 102, 0));
 
-        double value = ((AuctionApplication) getActivity().getApplicationContext()).getFundValue();
+        double value = ((AuctionApplication) getApplicationContext()).getFundValue();
         _fundValueTextView.setText(FormatUtils.valueToString(value));
 
-        view.findViewById(R.id.fundValueOne).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.fundValueOne).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendFunds(FUND_VALUE_ONE);
             }
         });
 
-        view.findViewById(R.id.fundValueTwo).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.fundValueTwo).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendFunds(FUND_VALUE_TWO);
             }
         });
 
-        view.findViewById(R.id.fundValueThree).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.fundValueThree).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendFunds(FUND_VALUE_THREE);
             }
         });
 
-        view.findViewById(R.id.fundValueOther).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.fundValueOther).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 sendFunds(_fundValueStepper.getValue());
             }
         });
-
-        return view;
     }
 
     private void sendFunds(final double fundPrice) {
@@ -119,7 +109,7 @@ public class FundFragment extends Fragment {
             return;
         }
 
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getActivity());
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
         String message =
                 String.format(getString(R.string.fund_prompt), FormatUtils.valueToString(fundPrice));
@@ -170,13 +160,15 @@ public class FundFragment extends Fragment {
             _fundTask = null;
 
             if (value > 0.0) {
-                Toast.makeText(getActivity(), getString(R.string.fund_success), Toast.LENGTH_SHORT).show();
+                Toast.makeText(FundActivity.this, getString(R.string.fund_success), Toast.LENGTH_SHORT)
+                        .show();
 
                 _fundValueTextView.setText(FormatUtils.valueToString(value));
 
-                ((AuctionApplication) getActivity().getApplicationContext()).setFundValue(value);
+                ((AuctionApplication) getApplicationContext()).setFundValue(value);
             } else {
-                Toast.makeText(getActivity(), getString(R.string.fund_failed), Toast.LENGTH_SHORT).show();
+                Toast.makeText(FundActivity.this, getString(R.string.fund_failed), Toast.LENGTH_SHORT)
+                        .show();
             }
         }
     }

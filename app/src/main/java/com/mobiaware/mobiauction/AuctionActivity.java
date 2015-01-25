@@ -74,31 +74,32 @@ public class AuctionActivity extends ActionBarActivity implements
     public void onNavigationDrawerItemSelected(int position) {
         Fragment fragment;
 
-    switch (position) {
-            case 0:
-                setTitle(getString(R.string.title_listitems));
-                fragment = ItemListFragment.newInstance(0, null);
-                break;
-            case 1:
-                setTitle(getString(R.string.title_listmyitems));
-                fragment = ItemListFragment.newInstance(1, null);
-                break;
-            case 2:
-                setTitle(getString(R.string.title_listlowbids));
-                fragment = ItemListFragment.newInstance(2, null);
-                break;
-            case 3:
-                setTitle(getString(R.string.title_fund));
-                fragment = FundFragment.newInstance();
-                break;
-            default:
-                setTitle(getString(R.string.title_listitems));
-                fragment = ItemListFragment.newInstance(0, null);
-        }
+       if (position == 3) {
+           startActivity(FundActivity.newInstance(getApplicationContext()));
+       } else {
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment).commit();
+           switch (position) {
+               case 0:
+                   setTitle(getString(R.string.title_listitems));
+                   fragment = ItemListFragment.newInstance(0, null);
+                   break;
+               case 1:
+                   setTitle(getString(R.string.title_listmyitems));
+                   fragment = ItemListFragment.newInstance(1, null);
+                   break;
+               case 2:
+                   setTitle(getString(R.string.title_listlowbids));
+                   fragment = ItemListFragment.newInstance(2, null);
+                   break;
+               default:
+                   setTitle(getString(R.string.title_listitems));
+                   fragment = ItemListFragment.newInstance(0, null);
+           }
+
+           FragmentManager fragmentManager = getSupportFragmentManager();
+           fragmentManager.beginTransaction()
+                   .replace(R.id.container, fragment).commit();
+       }
     }
 
     @Override
