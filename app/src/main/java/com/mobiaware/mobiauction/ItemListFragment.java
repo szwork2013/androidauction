@@ -14,6 +14,7 @@
 
 package com.mobiaware.mobiauction;
 
+import android.app.Activity;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
+import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.items.ItemContentProvider;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
@@ -48,6 +50,7 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
     private static final String ARG_TYPE = "type";
     private static final String ARG_FILTER = "filter";
 
+    private ListItemCallbacks _callbacks;
     private AbsListView _listView;
     private SwipeRefreshLayout _swipeContainer;
 
@@ -105,7 +108,12 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
         _listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(getActivity(), getString(R.string.fund_success), Toast.LENGTH_SHORT).show();
+                if (_callbacks != null) {
+                    Cursor cursor = _adapter.getCursor();
+                    cursor.moveToPosition(position);
+
+                    _callbacks.onListItemSelected(ItemDataSource.cursorToItem(cursor));
+                }
             }
         });
 
@@ -276,5 +284,28 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
                 _datasource.setIsWatching(object.getLong("uid"));
             }
         }
+    }
+
+
+
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        try {
+            _callbacks = (ListItemCallbacks) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Activity must implement NavigationDrawerCallbacks.");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        _callbacks = null;
+    }
+
+    public static interface ListItemCallbacks {
+        void onListItemSelected(Item position);
     }
 }

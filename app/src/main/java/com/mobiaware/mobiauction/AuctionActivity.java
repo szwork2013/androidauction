@@ -24,9 +24,10 @@ import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 
 import com.mobiaware.mobiauction.api.WSClient;
+import com.mobiaware.mobiauction.items.Item;
 
 public class AuctionActivity extends ActionBarActivity implements
-        NavDrawerFragment.NavigationDrawerCallbacks, WSClient.WebsocketCallbacks {
+        NavDrawerFragment.NavigationDrawerCallbacks, ItemListFragment.ListItemCallbacks, WSClient.WebsocketCallbacks {
     private WSClient _ws;
 
     public static Intent newInstance(Context context) {
@@ -127,5 +128,13 @@ public class AuctionActivity extends ActionBarActivity implements
         // } catch (JSONException e) {
         // Log.e(TAG, "Error fetching auction items.", e);
         // }
+    }
+
+    @Override
+    public void onListItemSelected(Item position) {
+
+        Item a = position;
+
+        startActivity(BidActivity.newInstance(getApplicationContext(), position));
     }
 }

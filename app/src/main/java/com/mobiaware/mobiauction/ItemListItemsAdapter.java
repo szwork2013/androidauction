@@ -27,6 +27,7 @@ import android.widget.TextView;
 import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.users.User;
+import com.mobiaware.mobiauction.utils.FormatUtils;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -64,10 +65,7 @@ public class ItemListItemsAdapter extends CursorAdapter {
                     Long.toString(item.getBidCount())));
         }
 
-        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.US);
-        nf.setMinimumFractionDigits(0);
-
-        ((TextView) view.findViewById(R.id.itemPrice)).setText(nf.format(item.getCurPrice()));
+        ((TextView) view.findViewById(R.id.itemPrice)).setText(FormatUtils.valueToString(item.getCurPrice()));
         ((TextView) view.findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
 
         if (item.isBidding()) {

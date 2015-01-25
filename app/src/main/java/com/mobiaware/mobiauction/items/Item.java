@@ -62,8 +62,8 @@ final public class Item implements Parcelable {
     public Item(Parcel in) {
         this(in.readLong(), in.readString(), in.readString(), in.readString(), in.readString(), in
                 .readString(), in.readDouble(), in.readDouble(), in.readDouble(), in.readDouble(), in
-                .readString(), in.readLong(), in.readLong(), in.readString(), in.readLong() == 0, in
-                .readLong() == 0, in.readLong() == 0);
+                .readString(), in.readLong(), in.readLong(), in.readString(), in.readLong() != 0, in
+                .readLong() != 0, in.readLong() != 0);
     }
 
     public long getUid() {

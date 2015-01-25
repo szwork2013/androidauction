@@ -78,28 +78,31 @@
             android:layout_alignParentTop="true" />
 
         <ImageView
-            android:layout_width="wrap_content"
+            android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_winning"
             android:id="@+id/itemWinning"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:contentDescription="@string/label_winning" />
 
         <ImageView
-            android:layout_width="wrap_content"
+            android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_losing"
             android:id="@+id/itemLosing"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:contentDescription="@string/label_losing" />
 
         <ImageView
-            android:layout_width="wrap_content"
+            android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_favorite"
             android:id="@+id/itemFavorite"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:contentDescription="@string/label_watching" />
     </RelativeLayout>
 
 </RelativeLayout>

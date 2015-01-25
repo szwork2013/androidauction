@@ -25,6 +25,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.mobiaware.mobiauction.R;
+import com.mobiaware.mobiauction.utils.FormatUtils;
 
 import java.text.NumberFormat;
 import java.util.Locale;
@@ -183,9 +184,6 @@ public class ValueStepper extends LinearLayout {
     }
 
     private void updateTextField() {
-        NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.US);
-        nf.setMinimumFractionDigits(0);
-
-        _valueText.setText(nf.format(_value));
+        _valueText.setText(FormatUtils.valueToString(_value));
     }
 }

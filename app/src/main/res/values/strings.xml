@@ -2,11 +2,9 @@
 <resources>
 
     <string name="app_name">MobiAuction</string>
-
     <string name="title_activity_main">MobiAuction</string>
     <string name="title_activity_login">MobiAuction</string>
     <string name="title_activity_items">MobiAuction</string>
-
     <string name="prompt_bidder">Bidder #</string>
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Sign In</string>
@@ -27,22 +25,36 @@
     <string name="title_listmyitems">My Items</string>
     <string name="title_listlowbids">Low Bids</string>
     <string name="title_fund">Fund A Cause</string>
-
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="navigation_drawer_search_title">Search</string>
-
     <string name="list_no_results">No Results</string>
-
     <string name="fund_prompt">Do you want to give %1$s?\n\nThis is in addition to any previous amount.</string>
     <string name="fund_success">Thanks for the contribution!</string>
     <string name="fund_failed">There was a problem updating your fund amount. Please try again.</string>
-
     <string name="refresh_success">Items successfully updated.</string>
     <string name="refresh_failed">There was a problem updating the items.</string>
-
     <string name="prompt_yes">Yes</string>
     <string name="prompt_no">No</string>
-
     <string name="search_hint">Keywords or Item#</string>
+    <string name="title_activity_bid">BidActivity</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="label_winning">Winning</string>
+    <string name="label_losing">losing</string>
+    <string name="label_watching">Watching</string>
+    <string name="button_bid">Bid</string>
+    <string name="label_itemnumber">Item #:</string>
+    <string name="label_itembidcount"># of bids:</string>
+    <string name="label_itemwinner">Winning bidder:</string>
+    <string name="label_itemincrement">Min. increment:</string>
+    <string name="label_itemseller">Donated by:</string>
+    <string name="label_itemvalue">Value:</string>
+    <string name="bid_prompt">Do you want to bid %1$s?</string>
+    <string name="bid_success">Your bid has been placed!</string>
+    <string name="bid_failed">There was a problem bidding. Please try again.</string>
+    <string name="label_fundvalueone">$25</string>
+    <string name="lable_fundvaluetwo">$50</string>
+    <string name="label_fundvaluethree">$100</string>
+    <string name="label_fundvalueother">Other</string>
 </resources>

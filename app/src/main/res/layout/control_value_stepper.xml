@@ -17,7 +17,7 @@
         android:gravity="center"
         android:focusable="false"
         android:text="$0"
-        android:textStyle="bold" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Button
         android:id="@+id/btn_plus"
