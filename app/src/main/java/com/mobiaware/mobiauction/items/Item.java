@@ -59,7 +59,7 @@ final public class Item implements Parcelable {
         _isWatching = isWatching;
     }
 
-    public Item(Parcel in) {
+    private Item(Parcel in) {
         this(in.readLong(), in.readString(), in.readString(), in.readString(), in.readString(), in
                 .readString(), in.readDouble(), in.readDouble(), in.readDouble(), in.readDouble(), in
                 .readString(), in.readLong(), in.readLong(), in.readString(), in.readLong() != 0, in

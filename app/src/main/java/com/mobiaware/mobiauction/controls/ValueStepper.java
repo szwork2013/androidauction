@@ -27,9 +27,6 @@ import android.widget.TextView;
 import com.mobiaware.mobiauction.R;
 import com.mobiaware.mobiauction.utils.FormatUtils;
 
-import java.text.NumberFormat;
-import java.util.Locale;
-
 public class ValueStepper extends LinearLayout {
     private static final long REPEAT_DELAY = 50;
 
@@ -37,13 +34,11 @@ public class ValueStepper extends LinearLayout {
     private static final int MAXIMUM = 999;
     private static final int STEP = 1;
 
-    private Button _decrementBtn;
-    private Button _incrementBtn;
     private TextView _valueText;
 
-    private Handler repeatUpdateHandler = new Handler();
+    private final Handler repeatUpdateHandler = new Handler();
 
-    public double _value;
+    private double _value;
 
     private boolean _autoIncrement;
     private boolean _autoDecrement;
@@ -52,7 +47,7 @@ public class ValueStepper extends LinearLayout {
     private double _maximum = MAXIMUM;
     private double _step = STEP;
 
-    class RepetetiveUpdater implements Runnable {
+    private class RepetetiveUpdater implements Runnable {
         public void run() {
             if (_autoIncrement) {
                 increment();
@@ -108,7 +103,7 @@ public class ValueStepper extends LinearLayout {
     }
 
     private void initDecrementButton(View view) {
-        _decrementBtn = (Button) view.findViewById(R.id.btn_minus);
+        Button _decrementBtn = (Button) view.findViewById(R.id.btn_minus);
 
         _decrementBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -143,7 +138,7 @@ public class ValueStepper extends LinearLayout {
     }
 
     private void initIncrementButton(View view) {
-        _incrementBtn = (Button) view.findViewById(R.id.btn_plus);
+        Button _incrementBtn = (Button) view.findViewById(R.id.btn_plus);
 
         _incrementBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {

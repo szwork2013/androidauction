@@ -15,9 +15,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Name"
-            android:id="@+id/itemName"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentLeft="true" />
+            android:id="@+id/itemName" />
     </LinearLayout>
 
     <RelativeLayout

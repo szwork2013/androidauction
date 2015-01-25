@@ -19,7 +19,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-public class UsersSQLiteHelper extends SQLiteOpenHelper {
+class UsersSQLiteHelper extends SQLiteOpenHelper {
     public static final String TABLE_USERS = "users";
 
     public static final String COLUMN_UID = "uid";

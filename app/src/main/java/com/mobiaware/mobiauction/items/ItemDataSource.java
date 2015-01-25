@@ -23,7 +23,7 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 public class ItemDataSource {
-    public static String[] ALL_COLUMNS = {ItemSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
+    public static final String[] ALL_COLUMNS = {ItemSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
             ItemSQLiteHelper.COLUMN_NUMBER, ItemSQLiteHelper.COLUMN_NAME,
             ItemSQLiteHelper.COLUMN_DESCRIPTION, ItemSQLiteHelper.COLUMN_CATEGORY,
             ItemSQLiteHelper.COLUMN_SELLER, ItemSQLiteHelper.COLUMN_VALPRICE,
@@ -33,7 +33,7 @@ public class ItemDataSource {
             ItemSQLiteHelper.COLUMN_URL, ItemSQLiteHelper.COLUMN_MULTI,
             ItemSQLiteHelper.COLUMN_ISBIDDING, ItemSQLiteHelper.COLUMN_ISWATCHING};
 
-    private ContentResolver _contentResolver;
+    private final ContentResolver _contentResolver;
 
     public ItemDataSource(Context context) {
         _contentResolver = context.getContentResolver();

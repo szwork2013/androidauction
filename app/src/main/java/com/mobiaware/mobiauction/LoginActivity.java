@@ -82,7 +82,7 @@ public class LoginActivity extends Activity {
         });
     }
 
-    public void attemptLogin() {
+    void attemptLogin() {
         if (_loginTask != null) {
             return;
         }
@@ -117,7 +117,7 @@ public class LoginActivity extends Activity {
         } else {
             showProgress();
             _loginTask = new LoginTask();
-            _loginTask.execute(new String[]{bidder, password});
+            _loginTask.execute(bidder, password);
         }
     }
 
@@ -145,7 +145,7 @@ public class LoginActivity extends Activity {
         }
     }
 
-    public class LoginTask extends AsyncTask<String, Void, User> {
+    private class LoginTask extends AsyncTask<String, Void, User> {
         @Override
         protected User doInBackground(String... params) {
             Preconditions
@@ -159,9 +159,7 @@ public class LoginActivity extends Activity {
                 return new User(object.getLong("uid"), object.getLong("auctionUid"), params[0], params[1],
                         object.getString("firstName"), object.getString("lastName"));
 
-            } catch (IOException e) {
-                Log.e(TAG, "Error authenticating bidder..", e);
-            } catch (JSONException e) {
+            } catch (IOException | JSONException e) {
                 Log.e(TAG, "Error authenticating bidder..", e);
             }
 

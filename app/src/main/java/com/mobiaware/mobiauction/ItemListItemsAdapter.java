@@ -29,10 +29,7 @@ import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.users.User;
 import com.mobiaware.mobiauction.utils.FormatUtils;
 
-import java.text.NumberFormat;
-import java.util.Locale;
-
-public class ItemListItemsAdapter extends CursorAdapter {
+class ItemListItemsAdapter extends CursorAdapter {
     private final User _user;
     private final String[] _labels;
 

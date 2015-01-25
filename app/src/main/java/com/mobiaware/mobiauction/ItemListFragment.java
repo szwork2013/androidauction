@@ -15,13 +15,13 @@
 package com.mobiaware.mobiauction;
 
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.LoaderManager;
+import android.content.CursorLoader;
+import android.content.Loader;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.CursorLoader;
-import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -55,9 +55,6 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
     private SwipeRefreshLayout _swipeContainer;
 
     private ItemListItemsAdapter _adapter;
-
-    private LoaderManager _loaderManager;
-    private CursorLoader _cursorLoader;
 
     private GetItemsTask _getItemsTask;
 
@@ -93,7 +90,7 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
 
         _adapter = new ItemListItemsAdapter(getActivity(), null);
 
-        _loaderManager = getLoaderManager();
+        LoaderManager _loaderManager = getLoaderManager();
         _loaderManager.initLoader(_type, null, this);
 
         _datasource = new ItemDataSource(getActivity());
@@ -150,6 +147,7 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        CursorLoader _cursorLoader;
         switch (id) {
             case 1:
                 User user = ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();

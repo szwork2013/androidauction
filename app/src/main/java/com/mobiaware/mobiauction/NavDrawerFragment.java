@@ -14,20 +14,16 @@
 
 package com.mobiaware.mobiauction;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.SearchView;
 
 import java.util.ArrayList;
 
@@ -51,8 +48,6 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
     private View _containerView;
     private ListView _listView;
     private SearchView _searchView;
-
-    private NavDrawerItemsAdapter _adapter;
 
     private int _currentSelectedPosition = 0;
     private boolean _fromSavedInstanceState;
@@ -96,7 +91,7 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         navDrawerItems.add(new NavDrawerItem(getString(R.string.title_listlowbids), R.drawable.ic_lowitems));
         navDrawerItems.add(new NavDrawerItem(getString(R.string.title_fund), R.drawable.ic_fund));
 
-        _adapter = new NavDrawerItemsAdapter(getActivity(),
+        NavDrawerItemsAdapter _adapter = new NavDrawerItemsAdapter(getActivity(),
                 navDrawerItems);
         _listView.setAdapter(_adapter);
 
@@ -104,7 +99,7 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         return _listView;
     }
 
-    public boolean isDrawerOpen() {
+    boolean isDrawerOpen() {
         return _drawerLayout != null && _drawerLayout.isDrawerOpen(_containerView);
     }
 
@@ -114,11 +109,13 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         _drawerLayout = drawerLayout;
         _drawerLayout.setDrawerShadow(R.drawable.ic_drawer_shadow, GravityCompat.START);
 
-        ActionBar actionBar = getActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setHomeButtonEnabled(true);
-        actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#937EB6")));
-        actionBar.setIcon(R.drawable.ic_launcher);
+        ActionBar actionBar = getActivity().getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+//        actionBar.setBackgroundDrawable(new ColorDrawable(Color.parseColor("#937EB6")));
+//        actionBar.setIcon(R.drawable.ic_launcher);
+        }
 
         _drawerToggle =
                 new ActionBarDrawerToggle(getActivity(), _drawerLayout, R.drawable.ic_drawer,
@@ -130,7 +127,7 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
                             return;
                         }
 
-                        getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()
+                        getActivity().invalidateOptionsMenu(); // calls onPrepareOptionsMenu()
                     }
 
                     @Override
@@ -146,7 +143,7 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
                             sp.edit().putBoolean(PREF_USER_LEARNED_DRAWER, true).apply();
                         }
 
-                        getActivity().supportInvalidateOptionsMenu(); // calls onPrepareOptionsMenu()
+                        getActivity().invalidateOptionsMenu(); // calls onPrepareOptionsMenu()
                     }
                 };
 
@@ -218,9 +215,6 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
         _searchView.setOnQueryTextListener(this);
         _searchView.setIconifiedByDefault(true);
         _searchView.setIconified(true);
-        _searchView.setFocusable(false);
-        _searchView.setFocusableInTouchMode(true);
-        _searchView.clearFocus();
         _searchView.setQueryHint(getString(R.string.search_hint));
         _searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
@@ -237,21 +231,13 @@ public class NavDrawerFragment extends Fragment implements SearchView.OnQueryTex
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (_drawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+        return _drawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     private void showGlobalContextActionBar() {
-        ActionBar actionBar = getActionBar();
+        ActionBar actionBar = getActivity().getActionBar();
         actionBar.setDisplayShowTitleEnabled(true);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);
-    }
-
-    private ActionBar getActionBar() {
-        return ((ActionBarActivity) getActivity()).getSupportActionBar();
     }
 
     @Override

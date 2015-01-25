@@ -263,7 +263,7 @@ public final class Preconditions {
      * @throws IndexOutOfBoundsException if {@code index} is negative or is not less than {@code size}
      * @throws IllegalArgumentException  if {@code size} is negative
      */
-    public static int checkElementIndex(int index, int size, String desc) {
+    private static int checkElementIndex(int index, int size, String desc) {
         // Carefully optimized for execution by hotspot (explanatory comment above)
         if (index < 0 || index >= size) {
             throw new IndexOutOfBoundsException(badElementIndex(index, size, desc));
@@ -306,7 +306,7 @@ public final class Preconditions {
      * @throws IndexOutOfBoundsException if {@code index} is negative or is greater than {@code size}
      * @throws IllegalArgumentException  if {@code size} is negative
      */
-    public static int checkPositionIndex(int index, int size, String desc) {
+    private static int checkPositionIndex(int index, int size, String desc) {
         // Carefully optimized for execution by hotspot (explanatory comment above)
         if (index < 0 || index > size) {
             throw new IndexOutOfBoundsException(badPositionIndex(index, size, desc));
@@ -364,7 +364,7 @@ public final class Preconditions {
      * @param args     the arguments to be substituted into the message template. Arguments are converted
      *                 to strings using {@link String#valueOf(Object)}. Arguments can be null.
      */
-    static String format(String template, Object... args) {
+    private static String format(String template, Object... args) {
         template = String.valueOf(template); // null -> "null"
 
         // start substituting the arguments into the '%s' placeholders

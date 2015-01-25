@@ -19,7 +19,7 @@ import android.app.Application;
 import com.mobiaware.mobiauction.users.User;
 import com.mobiaware.mobiauction.users.UserDataSource;
 
-public class AuctionApplication extends Application {
+class AuctionApplication extends Application {
     private User _user;
     private double _fundValue;
 
@@ -32,7 +32,9 @@ public class AuctionApplication extends Application {
 
                 _user = datasource.getActiveUser();
             } finally {
-                datasource.close();
+                if (datasource != null) {
+                    datasource.close();
+                }
             }
         }
         return _user;
@@ -49,7 +51,9 @@ public class AuctionApplication extends Application {
       /* ignore failure */
             datasource.setActiveUser(user);
         } finally {
-            datasource.close();
+            if (datasource != null) {
+                datasource.close();
+            }
         }
     }
 

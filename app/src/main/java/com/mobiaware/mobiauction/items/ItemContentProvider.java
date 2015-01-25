@@ -26,10 +26,10 @@ import android.net.Uri;
 import android.text.TextUtils;
 
 public class ItemContentProvider extends ContentProvider {
-    public static final int ITEMS = 100;
-    public static final int ITEMS_ID = 200;
+    private static final int ITEMS = 100;
+    private static final int ITEMS_ID = 200;
 
-    public static final String AUTHORITY = "com.mobiaware.mobiauction.items.ItemContentProvider";
+    private static final String AUTHORITY = "com.mobiaware.mobiauction.items.ItemContentProvider";
     public static final Uri CONTENT_URI = Uri.parse("content://" + AUTHORITY + "/"
             + ItemSQLiteHelper.TABLE_ITEMS);
 
@@ -81,7 +81,7 @@ public class ItemContentProvider extends ContentProvider {
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
-        long insertId = 0;
+        long insertId;
 
         SQLiteDatabase database = _databaseHelper.getWritableDatabase();
 

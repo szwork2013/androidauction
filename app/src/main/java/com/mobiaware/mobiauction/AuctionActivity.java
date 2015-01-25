@@ -14,19 +14,19 @@
 
 package com.mobiaware.mobiauction;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.text.TextUtils;
 
 import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.items.Item;
 
-public class AuctionActivity extends ActionBarActivity implements
+public class AuctionActivity extends Activity implements
         NavDrawerFragment.NavigationDrawerCallbacks, ItemListFragment.ListItemCallbacks, WSClient.WebsocketCallbacks {
     private WSClient _ws;
 
@@ -40,7 +40,7 @@ public class AuctionActivity extends ActionBarActivity implements
 
         setContentView(R.layout.activity_auction);
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentManager fragmentManager = getFragmentManager();
         NavDrawerFragment navDrawerFragment =
                 (NavDrawerFragment) fragmentManager.findFragmentById(R.id.navigation_drawer);
         navDrawerFragment
@@ -96,7 +96,7 @@ public class AuctionActivity extends ActionBarActivity implements
                    fragment = ItemListFragment.newInstance(0, null);
            }
 
-           FragmentManager fragmentManager = getSupportFragmentManager();
+           FragmentManager fragmentManager = getFragmentManager();
            fragmentManager.beginTransaction()
                    .replace(R.id.container, fragment).commit();
        }
@@ -111,7 +111,7 @@ public class AuctionActivity extends ActionBarActivity implements
             fragment = ItemListFragment.newInstance(11, search);
         }
 
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction()
                 .replace(R.id.container, fragment).commit();
     }
@@ -133,9 +133,6 @@ public class AuctionActivity extends ActionBarActivity implements
 
     @Override
     public void onListItemSelected(Item position) {
-
-        Item a = position;
-
         startActivity(BidActivity.newInstance(getApplicationContext(), position));
     }
 }

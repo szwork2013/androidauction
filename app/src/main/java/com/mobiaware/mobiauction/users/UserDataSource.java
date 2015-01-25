@@ -24,13 +24,13 @@ import android.provider.BaseColumns;
 import com.mobiaware.mobiauction.utils.CloseUtils;
 
 public class UserDataSource {
-    private static String[] ALL_COLUMNS = {UsersSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
+    private static final String[] ALL_COLUMNS = {UsersSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
             UsersSQLiteHelper.COLUMN_AUCTION, UsersSQLiteHelper.COLUMN_BIDDER,
             UsersSQLiteHelper.COLUMN_PASSWORD, UsersSQLiteHelper.COLUMN_FIRSTNAME,
             UsersSQLiteHelper.COLUMN_LASTNAME};
 
     private SQLiteDatabase _database;
-    private UsersSQLiteHelper _databaseHelper;
+    private final UsersSQLiteHelper _databaseHelper;
 
     public UserDataSource(Context context) {
         _databaseHelper = new UsersSQLiteHelper(context);
