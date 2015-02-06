@@ -1,38 +1,25 @@
-/*
- * Copyright (c) 2010 mobiaware.com.
- * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
- * in compliance with the License. You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
- */
-
 package com.mobiaware.mobiauction;
 
 import android.app.Activity;
-import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
-import com.mobiaware.mobiauction.items.Item;
+import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.items.ItemContentProvider;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
@@ -44,13 +31,13 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class ItemListFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    private static final String TAG = ItemListFragment.class.getName();
+public class ItemListActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>,
+        WSClient.OnMessageListener {
+    private static final String TAG = ItemListActivity.class.getName();
 
     private static final String ARG_TYPE = "type";
     private static final String ARG_FILTER = "filter";
 
-    private ListItemCallbacks _callbacks;
     private AbsListView _listView;
     private SwipeRefreshLayout _swipeContainer;
 
@@ -66,60 +53,48 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
     private int _type;
     private String _filter;
 
-    public static ItemListFragment newInstance(int type, String filter) {
-        ItemListFragment fragment = new ItemListFragment();
+    private WSClient _webSocket;
 
-        Bundle args = new Bundle();
-        args.putInt(ARG_TYPE, type);
-        args.putString(ARG_FILTER, filter);
-
-        fragment.setArguments(args);
-
-        return fragment;
-    }
-
-    public ItemListFragment() {
-        // required empty public constructor
+    public static Intent newInstance(Context context, int type, String filter) {
+        Intent intent = new Intent(context, ItemListActivity.class);
+        intent.putExtra(ARG_TYPE, type);
+        intent.putExtra(ARG_FILTER, filter);
+        return intent;
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments() != null) {
-            _type = getArguments().getInt(ARG_TYPE, 0);
-            _filter = getArguments().getString(ARG_FILTER, null);
-        }
+        _type = getIntent().getIntExtra(ARG_TYPE, 0);
+        _filter = getIntent().getStringExtra(ARG_FILTER);
 
-        _datasource = new ItemDataSource(getActivity());
+        _datasource = new ItemDataSource(this);
 
-        _adapter = new ItemListItemsAdapter(getActivity(), null);
+        _adapter = new ItemListItemsAdapter(this, null);
 
         _loaderManager = getLoaderManager();
         _loaderManager.initLoader(_type, null, this);
-    }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_item, container, false);
+        _webSocket = new WSClient(this, this);
 
-        _listView = (AbsListView) view.findViewById(android.R.id.list);
-        _listView.setEmptyView(view.findViewById(android.R.id.empty));
+        setContentView(R.layout.activity_item_list);
+
+        _listView = (AbsListView) findViewById(android.R.id.list);
+        _listView.setEmptyView(findViewById(android.R.id.empty));
         _listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (_callbacks != null) {
-                    Cursor cursor = _adapter.getCursor();
-                    cursor.moveToPosition(position);
-
-                    _callbacks.onListItemSelected(ItemDataSource.cursorToItem(cursor));
-                }
+                Cursor cursor = _adapter.getCursor();
+                cursor.moveToPosition(position);
+                startActivity(BidActivity.newInstance(getApplicationContext(),
+                        ItemDataSource.cursorToItem(cursor)));
             }
         });
 
         _listView.setAdapter(_adapter);
 
-        _swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipecontainer);
+        _swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipecontainer);
         _swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -129,8 +104,7 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
 
         _listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
+            public void onScrollStateChanged(AbsListView view, int scrollState) {}
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
@@ -144,41 +118,85 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
                 _swipeContainer.setEnabled(enable);
             }
         });
+    }
 
-        return view;
+    @Override
+    protected void onResume() {
+        super.onResume();
+        _webSocket.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        _webSocket.stop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        _webSocket.stop();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_item_list, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_refresh) {
+            refreshItems();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onItemMessageReceived() {
+        if (_adapter != null) {
+            _adapter.notifyDataSetChanged();
+        }
+    }
+
+    @Override
+    public void onFundMessageReceived() {
+        // ignore
     }
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case 1:
-                User user = ((AuctionApplication) getActivity().getApplicationContext()).getUser();
+                User user = ((AuctionApplication) getApplicationContext()).getUser();
 
                 _cursorLoader =
-                        new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
-                                ItemDataSource.ALL_COLUMNS, ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 or "
-                                + ItemSQLiteHelper.COLUMN_ISWATCHING + "=1", null, "CASE WHEN "
-                                + ItemSQLiteHelper.COLUMN_WINNER + "!=" + user.getBidder()
-                                + " THEN 0 ELSE 1 END");
+                        new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
+                                ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 or " + ItemSQLiteHelper.COLUMN_ISWATCHING
+                                        + "=1", null, "CASE WHEN " + ItemSQLiteHelper.COLUMN_WINNER + "!="
+                                + user.getBidder() + " THEN 0 ELSE 1 END");
                 break;
             case 2:
                 _cursorLoader =
-                        new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
-                                ItemDataSource.ALL_COLUMNS, ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null,
-                                ItemSQLiteHelper.COLUMN_BIDCOUNT);
+                        new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
+                                ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null, ItemSQLiteHelper.COLUMN_BIDCOUNT);
                 break;
             case 11:
                 _cursorLoader =
-                        new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
-                                ItemDataSource.ALL_COLUMNS, ItemSQLiteHelper.COLUMN_NUMBER + " like '%" + _filter
-                                + "%' or " + ItemSQLiteHelper.COLUMN_NAME + " like '%" + _filter + "%' or "
-                                + ItemSQLiteHelper.COLUMN_DESCRIPTION + " like '%" + _filter + "%'", null,
+                        new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
+                                ItemSQLiteHelper.COLUMN_NUMBER + " like '%" + _filter + "%' or "
+                                        + ItemSQLiteHelper.COLUMN_NAME + " like '%" + _filter + "%' or "
+                                        + ItemSQLiteHelper.COLUMN_DESCRIPTION + " like '%" + _filter + "%'", null,
                                 ItemSQLiteHelper.COLUMN_NUMBER);
                 break;
             default:
                 _cursorLoader =
-                        new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
-                                ItemDataSource.ALL_COLUMNS, null, null, null);
+                        new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
+                                null, null, null);
         }
         return _cursorLoader;
     }
@@ -197,20 +215,12 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
         }
     }
 
-
-
-    public void refreshABC() {
-        _adapter.notifyDataSetChanged();
-    }
-
-
-
     private void refreshItems() {
         if (_getItemsTask != null) {
             return;
         }
 
-        User user = ((AuctionApplication) getActivity().getApplicationContext()).getUser();
+        User user = ((AuctionApplication) getApplicationContext()).getUser();
 
         _getItemsTask = new GetItemsTask(user);
         _getItemsTask.execute();
@@ -246,9 +256,11 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
             _swipeContainer.setRefreshing(false);
 
             if (success) {
-                Toast.makeText(getActivity(), getString(R.string.refresh_success), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ItemListActivity.this, getString(R.string.refresh_success),
+                        Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getActivity(), getString(R.string.refresh_failed), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ItemListActivity.this, getString(R.string.refresh_failed),
+                        Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -291,28 +303,5 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
                 _datasource.setIsWatching(object.getLong("uid"));
             }
         }
-    }
-
-
-
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-        try {
-            _callbacks = (ListItemCallbacks) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException("Activity must implement NavigationDrawerCallbacks.");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        _callbacks = null;
-    }
-
-    public static interface ListItemCallbacks {
-        void onListItemSelected(Item position);
     }
 }

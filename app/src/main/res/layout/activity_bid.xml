@@ -17,7 +17,7 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:id="@+id/itemName" />
     </LinearLayout>
 
@@ -26,15 +26,18 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:id="@+id/itemRow2"
-        android:layout_below="@+id/itemRow1">
+        android:layout_below="@+id/itemRow1"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:id="@+id/itemPrice"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:gravity="center_horizontal" />
 
         <ImageView
             android:layout_width="32dp"
@@ -103,7 +106,8 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="@string/label_itemnumber"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -111,7 +115,8 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:id="@+id/itemNumber"
             android:layout_alignParentRight="true"
-            android:layout_toRightOf="@+id/itemNumberLbl" />
+            android:layout_toRightOf="@+id/itemNumberLbl"
+            />
 
     </RelativeLayout>
 
@@ -127,7 +132,8 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="@string/label_itembidcount"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -151,7 +157,8 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="@string/label_itemwinner"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -174,7 +181,8 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="@string/label_itemincrement"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -198,7 +206,8 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:text="@string/label_itemseller"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -206,7 +215,10 @@
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:id="@+id/itemDonatedBy"
             android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+            android:scrollHorizontally="true"
+            android:ellipsize="end"
+            android:maxLines="1"/>
     </RelativeLayout>
 
     <RelativeLayout

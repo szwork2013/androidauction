@@ -20,31 +20,36 @@
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".LoginActivity"
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" />
-
         <activity
             android:name=".AuctionActivity"
             android:label="@string/title_activity_items" />
-
         <activity
-            android:name=".BidActivity"
-            android:label="@string/title_activity_bid"
+            android:name=".ItemListActivity"
+            android:label="@string/title_activity_item_list"
             android:parentActivityName=".AuctionActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.mobiaware.mobiauction.AuctionActivity" />
         </activity>
-
+        <activity
+            android:name=".BidActivity"
+            android:label="@string/title_activity_bid"
+            android:parentActivityName=".ItemListActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.mobiaware.mobiauction.ItemListActivity" />
+        </activity>
         <activity
             android:name=".FundActivity"
-            android:label="@string/title_activity_bid"
+            android:label="@string/title_activity_fund"
             android:parentActivityName=".AuctionActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

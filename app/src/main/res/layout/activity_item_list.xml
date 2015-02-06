@@ -1,0 +1,36 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:id="@+id/container"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    tools:context="com.mobiaware.mobiauction.ItemListActivity"
+    tools:ignore="MergeRootFrame" >
+
+    <android.support.v4.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/swipecontainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.mobiaware.mobiauction.ItemListActivity">
+
+        <FrameLayout xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            tools:context="com.mobiaware.mobiauction.ItemListActivity">
+
+            <ListView
+                android:id="@android:id/list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:choiceMode="singleChoice" />
+
+            <TextView
+                android:id="@android:id/empty"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="No results" />
+
+        </FrameLayout>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+    </FrameLayout>

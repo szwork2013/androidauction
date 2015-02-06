@@ -1,9 +1,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     android:padding="10dp"
     android:focusable="true"
     android:focusableInTouchMode="true">
+
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/logoView"
+        android:layout_gravity="center_horizontal|top"
+        android:src="@drawable/ic_logo" />
 
     <LinearLayout
         android:orientation="horizontal"
@@ -11,6 +18,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/itemRow1"
         android:gravity="center"
+        android:layout_below="@+id/logoView"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp">
 

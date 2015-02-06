@@ -42,7 +42,7 @@ public class ItemListItemsAdapter extends CursorAdapter {
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return LayoutInflater.from(context).inflate(R.layout.fragment_item_list_item, parent, false);
+        return LayoutInflater.from(context).inflate(R.layout.activity_item_list_item, parent, false);
     }
 
     @Override

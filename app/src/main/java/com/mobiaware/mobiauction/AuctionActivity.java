@@ -15,23 +15,15 @@
 package com.mobiaware.mobiauction;
 
 import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.widget.DrawerLayout;
-import android.text.TextUtils;
+import android.view.View;
+import android.widget.TextView;
 
-import com.mobiaware.mobiauction.api.WSClient;
-import com.mobiaware.mobiauction.items.Item;
+import com.mobiaware.mobiauction.users.User;
 
-public class AuctionActivity extends Activity implements
-        NavDrawerFragment.NavigationDrawerCallbacks, ItemListFragment.ListItemCallbacks, WSClient.OnMessageListener {
-    private static final String FRAGMENT_TAG = "ITEMLISTFRAGMENT";
-
-    private WSClient _webSocket;
-
+public class AuctionActivity extends Activity {
     public static Intent newInstance(Context context) {
         return new Intent(context, AuctionActivity.class);
     }
@@ -42,95 +34,39 @@ public class AuctionActivity extends Activity implements
 
         setContentView(R.layout.activity_auction);
 
-        FragmentManager fragmentManager = getFragmentManager();
-        NavDrawerFragment navDrawerFragment =
-                (NavDrawerFragment) fragmentManager.findFragmentById(R.id.navigation_drawer);
-        navDrawerFragment
-                .setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
+        User user = ((AuctionApplication) getApplicationContext()).getUser();
 
-        _webSocket = new WSClient(this, this);
-    }
+        ((TextView) findViewById(R.id.textWelcome)).setText(String.format(
+                getString(R.string.label_welcome), user.getFirstName()));
+        ((TextView) findViewById(R.id.textBidderNumber)).setText(String.format(
+                getString(R.string.label_bidder), user.getBidder()));
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        _webSocket.start();
-    }
+        findViewById(R.id.btnItems).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(ItemListActivity.newInstance(getApplicationContext(), 0, null));
+            }
+        });
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        _webSocket.stop();
-    }
+        findViewById(R.id.btnMyItems).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(ItemListActivity.newInstance(getApplicationContext(), 1, null));
+            }
+        });
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        _webSocket.stop();
-    }
+        findViewById(R.id.btnLowBids).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(ItemListActivity.newInstance(getApplicationContext(), 2, null));
+            }
+        });
 
-    @Override
-    public void onNavigationDrawerItemSelected(int position) {
-        Fragment fragment;
-
-       if (position == 3) {
-           startActivity(FundActivity.newInstance(getApplicationContext()));
-       } else {
-
-           switch (position) {
-               case 0:
-                   setTitle(getString(R.string.title_listitems));
-                   fragment = ItemListFragment.newInstance(0, null);
-                   break;
-               case 1:
-                   setTitle(getString(R.string.title_listmyitems));
-                   fragment = ItemListFragment.newInstance(1, null);
-                   break;
-               case 2:
-                   setTitle(getString(R.string.title_listlowbids));
-                   fragment = ItemListFragment.newInstance(2, null);
-                   break;
-               default:
-                   setTitle(getString(R.string.title_listitems));
-                   fragment = ItemListFragment.newInstance(0, null);
-           }
-
-           FragmentManager fragmentManager = getFragmentManager();
-           fragmentManager.beginTransaction()
-                   .replace(R.id.container, fragment, FRAGMENT_TAG).commit();
-       }
-    }
-
-    @Override
-    public void onNavigationDrawerSearch(String search) {
-        ItemListFragment fragment;
-        if (TextUtils.isEmpty(search)) {
-            fragment = ItemListFragment.newInstance(0, null);
-        } else {
-            fragment = ItemListFragment.newInstance(11, search);
-        }
-
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.container, fragment, FRAGMENT_TAG).commit();
-    }
-
-    @Override
-    public void onItemMessageReceived() {
-        FragmentManager fragmentManager = getFragmentManager();
-        Fragment myFragment = fragmentManager.findFragmentByTag(FRAGMENT_TAG);
-        if (myFragment.isVisible()) {
-            ((ItemListFragment)myFragment).refreshABC();
-        }
-    }
-
-    @Override
-    public void onFundMessageReceived() {
-        // ignore
-    }
-
-    @Override
-    public void onListItemSelected(Item position) {
-        startActivity(BidActivity.newInstance(getApplicationContext(), position));
+        findViewById(R.id.btnFund).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(FundActivity.newInstance(getApplicationContext()));
+            }
+        });
     }
 }

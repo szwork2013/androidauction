@@ -37,13 +37,12 @@
     <string name="prompt_yes">Yes</string>
     <string name="prompt_no">No</string>
     <string name="search_hint">Keywords or Item#</string>
-    <string name="title_activity_bid">BidActivity</string>
-    <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+     <string name="hello_world">Hello world!</string>
+    <string name="action_refresh">Refresh</string>
     <string name="label_winning">Winning</string>
     <string name="label_losing">losing</string>
     <string name="label_watching">Watching</string>
-    <string name="button_bid">Bid</string>
+    <string name="button_bid">Place Bid</string>
     <string name="label_itemnumber">Item #:</string>
     <string name="label_itembidcount"># of bids:</string>
     <string name="label_itemwinner">Winning bidder:</string>
@@ -57,4 +56,12 @@
     <string name="lable_fundvaluetwo">$50</string>
     <string name="label_fundvaluethree">$100</string>
     <string name="label_fundvalueother">Other</string>
+
+    <string name="label_welcome">Welcome %1$s. Happy Bidding!</string>
+    <string name="label_bidder">Bidder#: %1$s</string>
+
+    <string name="title_activity_bid">BidActivity</string>
+    <string name="title_activity_item_list">Items</string>
+    <string name="title_activity_fund">Fund A Cause</string>
+
 </resources>
