@@ -44,9 +44,7 @@ public class UserDataSource {
         _databaseHelper.close();
     }
 
-    public User setActiveUser(User user) {
-        _database.delete(UsersSQLiteHelper.TABLE_USERS, null, null);
-
+    public User setUser(User user) {
         ContentValues values = new ContentValues();
         values.put(UsersSQLiteHelper.COLUMN_UID, user.getUid());
         values.put(UsersSQLiteHelper.COLUMN_AUCTION, user.getAuction());
@@ -55,7 +53,7 @@ public class UserDataSource {
         values.put(UsersSQLiteHelper.COLUMN_FIRSTNAME, user.getFirstName());
         values.put(UsersSQLiteHelper.COLUMN_LASTNAME, user.getLastName());
 
-        long insertId = _database.insert(UsersSQLiteHelper.TABLE_USERS, null, values);
+        long insertId = _database.replace(UsersSQLiteHelper.TABLE_USERS, null, values);
 
         if (insertId < 0) {
             return null;
@@ -64,7 +62,7 @@ public class UserDataSource {
         return user;
     }
 
-    public User getActiveUser() {
+    public User getUser() {
         Cursor cursor = null;
         try {
             cursor =

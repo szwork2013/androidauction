@@ -16,40 +16,36 @@ package com.mobiaware.mobiauction;
 
 import android.app.Application;
 
+import com.mobiaware.mobiauction.funds.Fund;
+import com.mobiaware.mobiauction.funds.FundDataSource;
 import com.mobiaware.mobiauction.users.User;
 import com.mobiaware.mobiauction.users.UserDataSource;
 
 public class AuctionApplication extends Application {
     private User _user;
-    private double _fundValue;
+    private Fund _fund;
 
-    public User getActiveUser() {
+    public User getUser() {
         if (_user == null) {
-            UserDataSource datasource = null;
-            try {
-                datasource = new UserDataSource(this);
-                datasource.open();
-
-                _user = datasource.getActiveUser();
-            } finally {
-                if (datasource != null) {
-                    datasource.close();
-                }
-            }
+            readUser();
         }
         return _user;
     }
 
-    public void setActiveUser(User user) {
+    public void setUser(User user) {
         _user = user;
+        if (_user != null) {
+            saveUser();
+        }
+    }
 
+    private void readUser() {
         UserDataSource datasource = null;
         try {
             datasource = new UserDataSource(this);
             datasource.open();
 
-      /* ignore failure */
-            datasource.setActiveUser(user);
+            _user = datasource.getUser();
         } finally {
             if (datasource != null) {
                 datasource.close();
@@ -57,11 +53,61 @@ public class AuctionApplication extends Application {
         }
     }
 
-    public double getFundValue() {
-        return _fundValue;
+    private void saveUser() {
+        UserDataSource datasource = null;
+        try {
+            datasource = new UserDataSource(this);
+            datasource.open();
+
+            /* ignore failure */
+            datasource.setUser(_user);
+        } finally {
+            if (datasource != null) {
+                datasource.close();
+            }
+        }
     }
 
-    public void setFundValue(double fundValue) {
-        _fundValue = fundValue;
+    public Fund getFund() {
+        if (_fund == null) {
+            readFund();
+        }
+        return _fund;
+    }
+
+    public void setFund(Fund fund) {
+        _fund = fund;
+        if (_fund != null) {
+            saveFund();
+        }
+    }
+
+    private void readFund() {
+        FundDataSource datasource = null;
+        try {
+            datasource = new FundDataSource(this);
+            datasource.open();
+
+            _fund = datasource.getFund();
+        } finally {
+            if (datasource != null) {
+                datasource.close();
+            }
+        }
+    }
+
+    private void saveFund() {
+        FundDataSource datasource = null;
+        try {
+            datasource = new FundDataSource(this);
+            datasource.open();
+
+            /* ignore failure */
+            datasource.setFund(_fund);
+        } finally {
+            if (datasource != null) {
+                datasource.close();
+            }
+        }
     }
 }

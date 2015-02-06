@@ -36,7 +36,7 @@ public class ItemListItemsAdapter extends CursorAdapter {
     public ItemListItemsAdapter(Context context, Cursor cursor) {
         super(context, cursor, 0);
 
-        _user = ((AuctionApplication) context.getApplicationContext()).getActiveUser();
+        _user = ((AuctionApplication) context.getApplicationContext()).getUser();
         _labels = context.getResources().getStringArray(R.array.label_bid_count);
     }
 

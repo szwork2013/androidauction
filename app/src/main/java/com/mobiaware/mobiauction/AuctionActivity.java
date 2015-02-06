@@ -30,7 +30,7 @@ public class AuctionActivity extends Activity implements
         NavDrawerFragment.NavigationDrawerCallbacks, ItemListFragment.ListItemCallbacks, WSClient.OnMessageListener {
     private static final String FRAGMENT_TAG = "ITEMLISTFRAGMENT";
 
-    private WSClient _ws;
+    private WSClient _webSocket;
 
     public static Intent newInstance(Context context) {
         return new Intent(context, AuctionActivity.class);
@@ -48,25 +48,25 @@ public class AuctionActivity extends Activity implements
         navDrawerFragment
                 .setUp(R.id.navigation_drawer, (DrawerLayout) findViewById(R.id.drawer_layout));
 
-        _ws = new WSClient(this);
+        _webSocket = new WSClient(this, this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        _ws.start();
+        _webSocket.start();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        _ws.stop();
+        _webSocket.stop();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        _ws.stop();
+        _webSocket.stop();
     }
 
     @Override

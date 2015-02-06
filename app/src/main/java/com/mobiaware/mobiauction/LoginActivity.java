@@ -172,7 +172,7 @@ public class LoginActivity extends Activity {
             hideProgress();
 
             if (user != null) {
-                ((AuctionApplication) getApplicationContext()).setActiveUser(user);
+                ((AuctionApplication) getApplicationContext()).setUser(user);
                 startActivity(new Intent(getApplicationContext(), AuctionActivity.class));
                 finish();
             } else {

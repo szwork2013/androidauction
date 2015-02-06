@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.mobiaware.mobiauction.api.RESTClient;
 import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.controls.ValueStepper;
+import com.mobiaware.mobiauction.funds.Fund;
 import com.mobiaware.mobiauction.users.User;
 import com.mobiaware.mobiauction.utils.FormatUtils;
 
@@ -45,7 +46,7 @@ public class FundActivity extends Activity implements WSClient.OnMessageListener
     private static final double FUND_VALUE_TWO = 50.0;
     private static final double FUND_VALUE_THREE = 100.0;
 
-    private WSClient _ws;
+    private WSClient _webSocket;
 
     private TextView _fundValueTextView;
     private ValueStepper _fundValueStepper;
@@ -64,7 +65,7 @@ public class FundActivity extends Activity implements WSClient.OnMessageListener
 
         setContentView(R.layout.activity_fund);
 
-        _user = ((AuctionApplication) getApplicationContext()).getActiveUser();
+        _user = ((AuctionApplication) getApplicationContext()).getUser();
 
         _fundValueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
         _fundValueStepper.setMinimum(5);
@@ -75,8 +76,8 @@ public class FundActivity extends Activity implements WSClient.OnMessageListener
         _fundValueTextView = ((TextView) findViewById(R.id.fundValue));
         _fundValueTextView.setTextColor(Color.rgb(0, 102, 0));
 
-        double value = ((AuctionApplication) getApplicationContext()).getFundValue();
-        _fundValueTextView.setText(FormatUtils.valueToString(value));
+        Fund fund = ((AuctionApplication) getApplicationContext()).getFund();
+        _fundValueTextView.setText(FormatUtils.valueToString(fund.getValue()));
 
         findViewById(R.id.fundValueOne).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,25 +107,25 @@ public class FundActivity extends Activity implements WSClient.OnMessageListener
             }
         });
 
-        _ws = new WSClient(this);
+        _webSocket = new WSClient(this, this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        _ws.start();
+        _webSocket.start();
     }
 
     @Override
     protected void onPause() {
+        _webSocket.stop();
         super.onPause();
-        _ws.stop();
     }
 
     @Override
     protected void onDestroy() {
+        _webSocket.stop();
         super.onDestroy();
-        _ws.stop();
     }
 
     private void sendFunds(final double fundPrice) {
@@ -159,8 +160,8 @@ public class FundActivity extends Activity implements WSClient.OnMessageListener
 
     @Override
     public void onFundMessageReceived() {
-        double fundValue = ((AuctionApplication) getApplicationContext()).getFundValue();
-        _fundValueTextView.setText(FormatUtils.valueToString(fundValue));
+        Fund fund = ((AuctionApplication) getApplicationContext()).getFund();
+        _fundValueTextView.setText(FormatUtils.valueToString(fund.getValue()));
     }
 
     private class FundTask extends AsyncTask<String, Void, Double> {
@@ -198,8 +199,6 @@ public class FundActivity extends Activity implements WSClient.OnMessageListener
                         .show();
 
                 _fundValueTextView.setText(FormatUtils.valueToString(value));
-
-                ((AuctionApplication) getApplicationContext()).setFundValue(value);
             } else {
                 Toast.makeText(FundActivity.this, getString(R.string.fund_failed), Toast.LENGTH_SHORT)
                         .show();

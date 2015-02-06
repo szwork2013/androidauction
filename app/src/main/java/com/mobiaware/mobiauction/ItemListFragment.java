@@ -91,12 +91,12 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
             _filter = getArguments().getString(ARG_FILTER, null);
         }
 
+        _datasource = new ItemDataSource(getActivity());
+
         _adapter = new ItemListItemsAdapter(getActivity(), null);
 
         _loaderManager = getLoaderManager();
         _loaderManager.initLoader(_type, null, this);
-
-        _datasource = new ItemDataSource(getActivity());
     }
 
     @Override
@@ -152,7 +152,7 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case 1:
-                User user = ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();
+                User user = ((AuctionApplication) getActivity().getApplicationContext()).getUser();
 
                 _cursorLoader =
                         new CursorLoader(getActivity(), ItemContentProvider.CONTENT_URI,
@@ -210,7 +210,7 @@ public class ItemListFragment extends Fragment implements LoaderManager.LoaderCa
             return;
         }
 
-        User user = ((AuctionApplication) getActivity().getApplicationContext()).getActiveUser();
+        User user = ((AuctionApplication) getActivity().getApplicationContext()).getUser();
 
         _getItemsTask = new GetItemsTask(user);
         _getItemsTask.execute();

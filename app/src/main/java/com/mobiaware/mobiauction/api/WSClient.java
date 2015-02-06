@@ -14,10 +14,12 @@
 
 package com.mobiaware.mobiauction.api;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.mobiaware.mobiauction.AuctionApplication;
+import com.mobiaware.mobiauction.funds.Fund;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 
 import org.json.JSONException;
@@ -29,35 +31,33 @@ import de.tavendo.autobahn.WebSocketHandler;
 
 public class WSClient {
     private static final String TAG = WSClient.class.getName();
+
     private static final String API_WS = "ws://mobiaware.com/liveauction/notify";
 
-    private enum MessageType {
+    private static enum MessageType {
         INVALID, ITEM_MESSAGE, FUND_MESSAGE
-    };
-
-    private final WebSocketConnection _ws;
-    private final ItemDataSource _datasource;
-    private final OnMessageListener _listener;
+    }
 
     public static interface OnMessageListener {
         void onItemMessageReceived();
         void onFundMessageReceived();
     }
 
-    public WSClient(Activity activity) {
-        _ws = new WebSocketConnection();
-        _datasource = new ItemDataSource(activity);
+    private final Context _context;
 
-        try {
-            _listener = (OnMessageListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException("Activity must implement OnMessageListener.");
-        }
+    private final WebSocketConnection _connection;
+    private final OnMessageListener _listener;
+
+    public WSClient(Context context, OnMessageListener listener) {
+        _context = context;
+
+        _connection = new WebSocketConnection();
+        _listener = listener;
     }
 
     public void start() {
         try {
-            _ws.connect(API_WS, new WebSocketHandler() {
+            _connection.connect(API_WS, new WebSocketHandler() {
                 @Override
                 public void onOpen() {
                     Log.d(TAG, "Status: Connection opened." + API_WS);
@@ -80,8 +80,8 @@ public class WSClient {
     }
 
     public void stop() {
-        if (_ws.isConnected()) {
-            _ws.disconnect();
+        if (_connection.isConnected()) {
+            _connection.disconnect();
         }
     }
 
@@ -91,13 +91,15 @@ public class WSClient {
             try {
                 JSONObject object = new JSONObject(params[0]);
                 if (object.has("liveauction-item")) {
-                    JSONObject item = object.getJSONObject("liveauction-item");
-                    _datasource.updateItem(item.getLong("uid"), item.getDouble("curPrice"),
-                            item.getString("winner"), item.optLong("bidCount", 0), item.optLong("watchCount", 0));
+                    JSONObject json = object.getJSONObject("liveauction-item");
+                    ItemDataSource datasource = new ItemDataSource(_context);
+                    datasource.updateItem(json.getLong("uid"), json.getDouble("curPrice"),
+                            json.getString("winner"), json.optLong("bidCount", 0), json.optLong("watchCount", 0));
                     return MessageType.ITEM_MESSAGE;
                 } else if (object.has("liveauction-fund")) {
-                    JSONObject fund = object.getJSONObject("liveauction-fund");
-                    // ((AuctionApplication) getApplicationContext()).setFundValue(value);
+                    JSONObject json = object.getJSONObject("liveauction-fund");
+                    Fund fund = new Fund(1, json.getDouble("sum"), json.getString("name"));
+                    ((AuctionApplication) _context.getApplicationContext()).setFund(fund);
                     return MessageType.FUND_MESSAGE;
                 }
             } catch (JSONException e) {
@@ -108,19 +110,17 @@ public class WSClient {
 
         @Override
         protected void onPostExecute(MessageType value) {
-            if (_listener != null) {
-                switch (value) {
-                    case INVALID:
-                        break;
-                    case ITEM_MESSAGE:
-                        _listener.onItemMessageReceived();
-                        break;
-                    case FUND_MESSAGE:
-                        _listener.onFundMessageReceived();
-                        break;
-                    default:
-                        break;
-                }
+            if (_listener == null) {
+                return;
+            }
+
+            switch (value) {
+                case ITEM_MESSAGE:
+                    _listener.onItemMessageReceived();
+                    break;
+                case FUND_MESSAGE:
+                    _listener.onFundMessageReceived();
+                    break;
             }
         }
     }

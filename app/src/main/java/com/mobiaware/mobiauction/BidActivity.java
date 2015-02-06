@@ -29,6 +29,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
+import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.controls.ValueStepper;
 import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.users.User;
@@ -40,7 +41,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 
-public class BidActivity extends Activity {
+public class BidActivity extends Activity implements WSClient.OnMessageListener {
     private static final String TAG = BidActivity.class.getName();
 
     private static final String ARG_ITEM = "item";
@@ -51,6 +52,8 @@ public class BidActivity extends Activity {
     private User _user;
 
     private BidTask _bidTask;
+
+    private WSClient _ws;
 
     public static Intent newInstance(Context context, Item item) {
         Intent intent = new Intent(context, BidActivity.class);
@@ -65,7 +68,7 @@ public class BidActivity extends Activity {
         setContentView(R.layout.activity_bid);
 
         _item = getIntent().getExtras().getParcelable(ARG_ITEM);
-        _user = ((AuctionApplication) getApplicationContext()).getActiveUser();
+        _user = ((AuctionApplication) getApplicationContext()).getUser();
 
         ((TextView) findViewById(R.id.itemName)).setText(_item.getName());
         ((TextView) findViewById(R.id.itemNumber)).setText(_item.getNumber());
@@ -126,6 +129,26 @@ public class BidActivity extends Activity {
                 sendBid();
             }
         });
+
+        _ws = new WSClient(this, this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        _ws.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        _ws.stop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        _ws.stop();
     }
 
     private void sendBid() {
@@ -152,6 +175,16 @@ public class BidActivity extends Activity {
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    @Override
+    public void onItemMessageReceived() {
+
+    }
+
+    @Override
+    public void onFundMessageReceived() {
+
     }
 
     private class BidTask extends AsyncTask<String, Void, Item> {
