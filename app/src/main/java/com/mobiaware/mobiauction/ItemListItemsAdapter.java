@@ -32,67 +32,91 @@ import com.mobiaware.mobiauction.utils.FormatUtils;
 import com.squareup.picasso.Picasso;
 
 public class ItemListItemsAdapter extends CursorAdapter {
-    private final User _user;
-    private final String[] _labels;
+    static class ViewHolder {
+        TextView itemName;
+        TextView itemNumber;
+        TextView itemBids;
+        TextView itemPrice;
+        ImageView itemWinning;
+        ImageView itemLosing;
+        ImageView itemFavorite;
+        ImageView itemImage;
+
+        String[] bidLabels;
+    }
+
+    private ViewHolder _viewHolder;
 
     public ItemListItemsAdapter(Context context, Cursor cursor) {
         super(context, cursor, 0);
-
-        _user = ((AuctionApplication) context.getApplicationContext()).getUser();
-        _labels = context.getResources().getStringArray(R.array.label_bid_count);
     }
 
     @Override
     public View newView(Context context, Cursor cursor, ViewGroup parent) {
-        return LayoutInflater.from(context).inflate(R.layout.activity_item_list_item, parent, false);
+        View view =
+                LayoutInflater.from(context).inflate(R.layout.activity_item_list_item, parent, false);
+
+        _viewHolder = new ViewHolder();
+        _viewHolder.itemName = (TextView) view.findViewById(R.id.itemName);
+        _viewHolder.itemNumber = (TextView) view.findViewById(R.id.itemNumber);
+        _viewHolder.itemBids = (TextView) view.findViewById(R.id.itemBids);
+        _viewHolder.itemPrice = (TextView) view.findViewById(R.id.itemPrice);
+        _viewHolder.itemWinning = (ImageView) view.findViewById(R.id.itemWinning);
+        _viewHolder.itemLosing = (ImageView) view.findViewById(R.id.itemLosing);
+        _viewHolder.itemFavorite = (ImageView) view.findViewById(R.id.itemFavorite);
+        _viewHolder.itemImage = (ImageView) view.findViewById(R.id.itemImage);
+        _viewHolder.bidLabels = context.getResources().getStringArray(R.array.label_bid_count);
+        view.setTag(_viewHolder);
+
+        return view;
     }
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        ViewHolder viewHolder = (ViewHolder) view.getTag();
         Item item = ItemDataSource.cursorToItem(cursor);
 
-        ((TextView) view.findViewById(R.id.itemName)).setText(item.getName());
-        ((TextView) view.findViewById(R.id.itemNumber)).setText(item.getNumber());
+        viewHolder.itemName.setText(item.getName());
+        viewHolder.itemNumber.setText(item.getNumber());
 
         long bids = item.getBidCount();
         if (bids == 0) {
-            ((TextView) view.findViewById(R.id.itemBids)).setText(_labels[0]);
+            viewHolder.itemBids.setText(_viewHolder.bidLabels[0]);
         } else if (bids == 1) {
-            ((TextView) view.findViewById(R.id.itemBids)).setText(_labels[1]);
+            viewHolder.itemBids.setText(_viewHolder.bidLabels[1]);
         } else {
-            ((TextView) view.findViewById(R.id.itemBids)).setText(String.format(_labels[2],
+            viewHolder.itemBids.setText(String.format(_viewHolder.bidLabels[2],
                     Long.toString(item.getBidCount())));
         }
 
-        ((TextView) view.findViewById(R.id.itemPrice)).setText(FormatUtils.valueToString(item.getCurPrice()));
-        ((TextView) view.findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
+        viewHolder.itemPrice.setText(FormatUtils.valueToString(item.getCurPrice()));
+        viewHolder.itemPrice.setTextColor(Color.rgb(0, 102, 0));
 
         if (item.isBidding()) {
-            if (item.getWinner().equals(_user.getBidder())) {
-                view.findViewById(R.id.itemWinning).setVisibility(ImageView.VISIBLE);
-                view.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
-                view.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+            User user = ((AuctionApplication) context.getApplicationContext()).getUser();
+            if (item.getWinner().equals(user.getBidder())) {
+                viewHolder.itemWinning.setVisibility(ImageView.VISIBLE);
+                viewHolder.itemLosing.setVisibility(ImageView.INVISIBLE);
+                viewHolder.itemFavorite.setVisibility(ImageView.INVISIBLE);
             } else {
-                view.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
-                view.findViewById(R.id.itemLosing).setVisibility(ImageView.VISIBLE);
-                view.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+                viewHolder.itemWinning.setVisibility(ImageView.INVISIBLE);
+                viewHolder.itemLosing.setVisibility(ImageView.VISIBLE);
+                viewHolder.itemFavorite.setVisibility(ImageView.INVISIBLE);
             }
         } else if (item.isWatching()) {
-            view.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
-            view.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
-            view.findViewById(R.id.itemFavorite).setVisibility(ImageView.VISIBLE);
+            viewHolder.itemWinning.setVisibility(ImageView.INVISIBLE);
+            viewHolder.itemLosing.setVisibility(ImageView.INVISIBLE);
+            viewHolder.itemFavorite.setVisibility(ImageView.VISIBLE);
         } else {
-            view.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
-            view.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
-            view.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+            viewHolder.itemWinning.setVisibility(ImageView.INVISIBLE);
+            viewHolder.itemLosing.setVisibility(ImageView.INVISIBLE);
+            viewHolder.itemFavorite.setVisibility(ImageView.INVISIBLE);
         }
 
         if (TextUtils.isEmpty(item.getUrl())) {
-            ((ImageView)view.findViewById(R.id.itemImage)).setImageResource(R.drawable.ic_nophoto);
+            viewHolder.itemImage.setImageResource(R.drawable.ic_nophoto);
         } else {
-            Picasso.with(context)
-                    .load(item.getUrl())
-                    .into(((ImageView)view.findViewById(R.id.itemImage)));
+            Picasso.with(context).load(item.getUrl()).into(viewHolder.itemImage);
         }
     }
 }
