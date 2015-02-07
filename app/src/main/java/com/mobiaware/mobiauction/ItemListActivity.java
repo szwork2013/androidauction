@@ -8,8 +8,9 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -80,6 +81,8 @@ public class ItemListActivity extends Activity implements LoaderManager.LoaderCa
 
         setContentView(R.layout.activity_item_list);
 
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
         _listView = (AbsListView) findViewById(android.R.id.list);
         _listView.setEmptyView(findViewById(android.R.id.empty));
         _listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -148,9 +151,13 @@ public class ItemListActivity extends Activity implements LoaderManager.LoaderCa
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_refresh) {
-            refreshItems();
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_refresh:
+                refreshItems();
+                return true;
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
         }
 
         return super.onOptionsItemSelected(item);
@@ -179,11 +186,14 @@ public class ItemListActivity extends Activity implements LoaderManager.LoaderCa
                                 ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 or " + ItemSQLiteHelper.COLUMN_ISWATCHING
                                         + "=1", null, "CASE WHEN " + ItemSQLiteHelper.COLUMN_WINNER + "!="
                                 + user.getBidder() + " THEN 0 ELSE 1 END");
+
+                setTitle("My Items");
                 break;
             case 2:
                 _cursorLoader =
                         new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
                                 ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null, ItemSQLiteHelper.COLUMN_BIDCOUNT);
+                setTitle("Low Bids");
                 break;
             case 11:
                 _cursorLoader =
@@ -192,11 +202,13 @@ public class ItemListActivity extends Activity implements LoaderManager.LoaderCa
                                         + ItemSQLiteHelper.COLUMN_NAME + " like '%" + _filter + "%' or "
                                         + ItemSQLiteHelper.COLUMN_DESCRIPTION + " like '%" + _filter + "%'", null,
                                 ItemSQLiteHelper.COLUMN_NUMBER);
+                setTitle("Search Results");
                 break;
             default:
                 _cursorLoader =
                         new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
                                 null, null, null);
+                setTitle("Items");
         }
         return _cursorLoader;
     }

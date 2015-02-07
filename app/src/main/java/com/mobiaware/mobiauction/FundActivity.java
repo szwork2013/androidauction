@@ -22,7 +22,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -64,6 +66,8 @@ public class FundActivity extends Activity implements WSClient.OnMessageListener
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_fund);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         _user = ((AuctionApplication) getApplicationContext()).getUser();
 
@@ -204,5 +208,15 @@ public class FundActivity extends Activity implements WSClient.OnMessageListener
                         .show();
             }
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

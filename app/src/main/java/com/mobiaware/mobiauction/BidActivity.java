@@ -22,7 +22,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -68,6 +70,8 @@ public class BidActivity extends Activity implements WSClient.OnMessageListener 
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_bid);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         _item = getIntent().getExtras().getParcelable(ARG_ITEM);
 
@@ -163,11 +167,12 @@ public class BidActivity extends Activity implements WSClient.OnMessageListener 
         ((TextView) findViewById(R.id.itemDescription)).setText(_item.getDescription());
         ((TextView) findViewById(R.id.itemDonatedBy)).setText(_item.getSeller());
 
+        double bidValue = Math.max(_item.getMinPrice(), _item.getCurPrice() + _item.getIncPrice());
         _bidValueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
-        _bidValueStepper.setMinimum(_item.getCurPrice() + _item.getIncPrice());
+        _bidValueStepper.setMinimum(bidValue);
         _bidValueStepper.setStep(_item.getIncPrice());
         _bidValueStepper.setMaximum(_item.getCurPrice() + 500);
-        _bidValueStepper.setValue(_item.getCurPrice() + _item.getIncPrice());
+        _bidValueStepper.setValue(bidValue);
     }
 
     private void sendBid() {
@@ -196,6 +201,16 @@ public class BidActivity extends Activity implements WSClient.OnMessageListener 
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private class BidTask extends AsyncTask<String, Void, Boolean> {

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">MobiAuction</string>
     <string name="title_activity_main">MobiAuction</string>
     <string name="title_activity_login">MobiAuction</string>
@@ -14,20 +13,7 @@
     <string name="error_incorrect_password">The Password is not valid.</string>
     <string name="error_field_required">This field is required.</string>
     <string name="progresss_authenticating">Authenticating…</string>
-
-    <string-array name="label_bid_count">
-        <item>"No bids"</item>
-        <item>"1 bid"</item>
-        <item>"%1$s bids"</item>
-    </string-array>
-
-    <string name="title_listitems">Items</string>
-    <string name="title_listmyitems">My Items</string>
-    <string name="title_listlowbids">Low Bids</string>
     <string name="title_fund">Fund A Cause</string>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="navigation_drawer_search_title">Search</string>
     <string name="list_no_results">No Results</string>
     <string name="fund_prompt">Do you want to give %1$s?\n\nThis is in addition to any previous amount.</string>
     <string name="fund_success">Thanks for the contribution!</string>
@@ -37,7 +23,6 @@
     <string name="prompt_yes">Yes</string>
     <string name="prompt_no">No</string>
     <string name="search_hint">Keywords or Item#</string>
-     <string name="hello_world">Hello world!</string>
     <string name="action_refresh">Refresh</string>
     <string name="label_winning">Winning</string>
     <string name="label_losing">losing</string>
@@ -56,12 +41,15 @@
     <string name="lable_fundvaluetwo">$50</string>
     <string name="label_fundvaluethree">$100</string>
     <string name="label_fundvalueother">Other</string>
-
     <string name="label_welcome">Welcome %1$s. Happy Bidding!</string>
     <string name="label_bidder">Bidder#: %1$s</string>
-
-    <string name="title_activity_bid">BidActivity</string>
+    <string name="title_activity_bid">Details</string>
     <string name="title_activity_item_list">Items</string>
     <string name="title_activity_fund">Fund A Cause</string>
 
+    <string-array name="label_bid_count">
+        <item>"No bids"</item>
+        <item>"1 bid"</item>
+        <item>"%1$s bids"</item>
+    </string-array>
 </resources>

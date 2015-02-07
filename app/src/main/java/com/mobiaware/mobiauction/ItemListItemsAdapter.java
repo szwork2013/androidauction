@@ -17,6 +17,7 @@ package com.mobiaware.mobiauction;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +29,7 @@ import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.users.User;
 import com.mobiaware.mobiauction.utils.FormatUtils;
+import com.squareup.picasso.Picasso;
 
 public class ItemListItemsAdapter extends CursorAdapter {
     private final User _user;
@@ -83,6 +85,14 @@ public class ItemListItemsAdapter extends CursorAdapter {
             view.findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
             view.findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
             view.findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+        }
+
+        if (TextUtils.isEmpty(item.getUrl())) {
+            ((ImageView)view.findViewById(R.id.itemImage)).setImageResource(R.drawable.ic_nophoto);
+        } else {
+            Picasso.with(context)
+                    .load(item.getUrl())
+                    .into(((ImageView)view.findViewById(R.id.itemImage)));
         }
     }
 }
