@@ -105,5 +105,4 @@ public class AuctionActivity extends Activity implements SearchView.OnQueryTextL
     public boolean onQueryTextChange(String newText) {
         return false;
     }
-
 }

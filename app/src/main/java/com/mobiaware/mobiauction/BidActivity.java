@@ -23,10 +23,13 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
+import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -44,7 +47,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 
-public class BidActivity extends Activity implements WSClient.OnMessageListener {
+public class BidActivity extends Activity  implements SearchView.OnQueryTextListener, WSClient.OnMessageListener {
     private static final String TAG = BidActivity.class.getName();
 
     private static final String ARG_ITEM = "item";
@@ -116,6 +119,38 @@ public class BidActivity extends Activity implements WSClient.OnMessageListener 
     @Override
     public void onFundMessageReceived() {
         // nothing
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_auction, menu);
+
+        MenuItem menuItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) menuItem.getActionView();
+        searchView.setOnQueryTextListener(this);
+        searchView.setIconifiedByDefault(true);
+        searchView.setIconified(true);
+        searchView.setFocusable(false);
+        searchView.setFocusableInTouchMode(true);
+        searchView.clearFocus();
+        searchView.setQueryHint(getString(R.string.search_hint));
+
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        if (TextUtils.isEmpty(query)) {
+            startActivity(ItemListActivity.newInstance(getApplicationContext(), 0, null));
+        } else {
+            startActivity(ItemListActivity.newInstance(getApplicationContext(), 11, query));
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return false;
     }
 
     private void updateView() {

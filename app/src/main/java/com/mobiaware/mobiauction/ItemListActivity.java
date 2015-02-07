@@ -11,12 +11,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
@@ -32,7 +34,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class ItemListActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>,
+public class ItemListActivity extends Activity implements SearchView.OnQueryTextListener, LoaderManager.LoaderCallbacks<Cursor>,
         WSClient.OnMessageListener {
     private static final String TAG = ItemListActivity.class.getName();
 
@@ -144,6 +146,17 @@ public class ItemListActivity extends Activity implements LoaderManager.LoaderCa
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_item_list, menu);
+
+        MenuItem menuItem = menu.findItem(R.id.action_search);
+        SearchView searchView = (SearchView) menuItem.getActionView();
+        searchView.setOnQueryTextListener(this);
+        searchView.setIconifiedByDefault(true);
+        searchView.setIconified(true);
+        searchView.setFocusable(false);
+        searchView.setFocusableInTouchMode(true);
+        searchView.clearFocus();
+        searchView.setQueryHint(getString(R.string.search_hint));
+
         return true;
     }
 
@@ -236,6 +249,22 @@ public class ItemListActivity extends Activity implements LoaderManager.LoaderCa
 
         _getItemsTask = new GetItemsTask(user);
         _getItemsTask.execute();
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        if (TextUtils.isEmpty(query)) {
+            _loaderManager.restartLoader(0, null, this);
+        } else {
+            _filter = query;
+            _loaderManager.restartLoader(11, null, this);
+        }
+        return true;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return false;
     }
 
     public class GetItemsTask extends AsyncTask<String, Void, Boolean> {
