@@ -22,6 +22,8 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
+import com.mobiaware.mobiauction.users.User;
+
 public class ItemDataSource {
     public static final String[] ALL_COLUMNS = {ItemSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
             ItemSQLiteHelper.COLUMN_NUMBER, ItemSQLiteHelper.COLUMN_NAME,
@@ -95,6 +97,20 @@ public class ItemDataSource {
 
         return _contentResolver.update(ItemContentProvider.CONTENT_URI, values,
                 ItemSQLiteHelper.COLUMN_UID + "=?", new String[]{Long.toString(uid)});
+    }
+
+    public int getWinningCount(User user) {
+        Cursor cursor = _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
+                ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 AND " + ItemSQLiteHelper.COLUMN_WINNER + "=?",
+                new String[]{user.getBidder()}, null);
+        return cursor.getCount();
+    }
+
+    public int getLosingCount(User user) {
+        Cursor cursor = _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
+                ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 AND " + ItemSQLiteHelper.COLUMN_WINNER + "!=?",
+                new String[]{user.getBidder()}, null);
+        return cursor.getCount();
     }
 
     public static Item cursorToItem(Cursor cursor) {
