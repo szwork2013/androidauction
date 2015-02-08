@@ -14,6 +14,7 @@
 
 package com.mobiaware.mobiauction;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -84,7 +85,10 @@ public class FundActivity extends Activity implements SearchView.OnQueryTextList
         _viewHolder.fundValueStepper.setMaximum(1000);
         _viewHolder.fundValueStepper.setValue(5);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         findViewById(R.id.fundValueOne).setOnClickListener(new View.OnClickListener() {
             @Override

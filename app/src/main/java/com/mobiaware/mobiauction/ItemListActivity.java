@@ -1,5 +1,6 @@
 package com.mobiaware.mobiauction;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.Context;
@@ -46,7 +47,6 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
     public static final int TYPE_LOWBIDS = 300;
     public static final int TYPE_SEARCH = 400;
 
-
     private SwipeRefreshLayout _swipeContainer;
 
     private int _type;
@@ -86,7 +86,10 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
 
         setContentView(R.layout.activity_item_list);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         _swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipecontainer);
         _swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -116,7 +119,7 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
                                  int totalItemCount) {
                 boolean enable = false;
-                if (listView != null && listView.getChildCount() > 0) {
+                if (listView.getChildCount() > 0) {
                     boolean firstItemVisible = listView.getFirstVisiblePosition() == 0;
                     boolean topOfFirstItemVisible = listView.getChildAt(0).getTop() == 0;
                     enable = firstItemVisible && topOfFirstItemVisible;
@@ -238,16 +241,6 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
         }
     }
 
-    private void refreshItems() {
-        if (_getItemsTask != null) {
-            return;
-        }
-
-        User user = ((AuctionApplication) getApplicationContext()).getUser();
-        _getItemsTask = new GetItemsTask(user);
-        _getItemsTask.execute();
-    }
-
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (TextUtils.isEmpty(query)) {
@@ -263,6 +256,16 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
     @Override
     public boolean onQueryTextChange(String newText) {
         return false;
+    }
+
+    private void refreshItems() {
+        if (_getItemsTask != null) {
+            return;
+        }
+
+        User user = ((AuctionApplication) getApplicationContext()).getUser();
+        _getItemsTask = new GetItemsTask(user);
+        _getItemsTask.execute();
     }
 
     public class GetItemsTask extends AsyncTask<String, Void, Boolean> {

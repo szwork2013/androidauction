@@ -14,6 +14,7 @@
 
 package com.mobiaware.mobiauction;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
@@ -115,7 +116,10 @@ public class BidActivity extends Activity implements SearchView.OnQueryTextListe
         _viewHolder.itemDonatedBy = (TextView) findViewById(R.id.itemDonatedBy);
         _viewHolder.bidLabels = getResources().getStringArray(R.array.label_bid_count);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar actionBar = getActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
 
         findViewById(R.id.itemBid).setOnClickListener(new View.OnClickListener() {
             @Override
