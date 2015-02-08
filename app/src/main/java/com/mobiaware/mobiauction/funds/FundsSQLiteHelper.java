@@ -26,13 +26,11 @@ public class FundsSQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_AUCTION = "auction";
     public static final String COLUMN_VALUE = "value";
     public static final String COLUMN_NAME = "name";
-
-    private static final String DATABASE_NAME = "funds.db";
-    private static final int DATABASE_VERSION = 1;
-
     private static final String DATABASE_CREATE = "CREATE TABLE " + TABLE_FUNDS + "("
             + BaseColumns._ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + COLUMN_AUCTION + " INTEGER,"
             + COLUMN_VALUE + " REAL, " + COLUMN_NAME + " TEXT NOT NULL" + ");";
+    private static final String DATABASE_NAME = "funds.db";
+    private static final int DATABASE_VERSION = 1;
 
     public FundsSQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

@@ -18,6 +18,15 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 final public class Item implements Parcelable {
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public Item createFromParcel(Parcel in) {
+            return new Item(in);
+        }
+
+        public Item[] newArray(int size) {
+            return new Item[size];
+        }
+    };
     private final long _uid;
     private final String _number;
     private final String _name;
@@ -159,14 +168,4 @@ final public class Item implements Parcelable {
         out.writeLong(_isBidding ? 1 : 0);
         out.writeLong(_isWatching ? 1 : 0);
     }
-
-    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
-        public Item createFromParcel(Parcel in) {
-            return new Item(in);
-        }
-
-        public Item[] newArray(int size) {
-            return new Item[size];
-        }
-    };
 }

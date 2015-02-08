@@ -15,7 +15,6 @@
 package com.mobiaware.mobiauction;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -35,7 +34,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
-import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.controls.ValueStepper;
 import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.items.ItemDataSource;
@@ -48,38 +46,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 
-public class BidActivity extends Activity implements SearchView.OnQueryTextListener,
-        WSClient.OnMessageListener {
+public class BidActivity extends WebSocketActivity implements SearchView.OnQueryTextListener {
     private static final String TAG = BidActivity.class.getName();
 
     private static final String ARG_ITEM = "item";
 
-    static class ViewHolder {
-        ValueStepper valueStepper;
-        TextView itemName;
-        TextView itemNumber;
-        TextView itemBids;
-        TextView itemPrice;
-        ImageView itemWinning;
-        ImageView itemLosing;
-        ImageView itemFavorite;
-        TextView itemMinimumInc;
-        TextView itemWinner;
-        TextView itemValue;
-        TextView itemDescription;
-        TextView itemDonatedBy;
-
-        String[] bidLabels;
-    }
-
     private Item _item;
-
-    private ItemDataSource _datasource;
-
-    private WSClient _webSocket;
-
     private ViewHolder _viewHolder;
-
     private BidTask _bidTask;
 
     public static Intent newInstance(Context context, Item item) {
@@ -95,10 +68,6 @@ public class BidActivity extends Activity implements SearchView.OnQueryTextListe
         setContentView(R.layout.activity_bid);
 
         _item = getIntent().getExtras().getParcelable(ARG_ITEM);
-
-        _datasource = new ItemDataSource(this);
-
-        _webSocket = new WSClient(this, this);
 
         _viewHolder = new ViewHolder();
         _viewHolder.valueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
@@ -132,31 +101,15 @@ public class BidActivity extends Activity implements SearchView.OnQueryTextListe
     @Override
     protected void onResume() {
         super.onResume();
-        _webSocket.start();
+
         updateView();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        _webSocket.stop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        _webSocket.stop();
     }
 
     @Override
     public void onItemMessageReceived() {
-        _item = _datasource.getItem(_item.getUid());
+        ItemDataSource datasource = new ItemDataSource(getApplicationContext());
+        _item = datasource.getItem(_item.getUid());
         updateView();
-    }
-
-    @Override
-    public void onFundMessageReceived() {
-        // nothing
     }
 
     @Override
@@ -218,7 +171,7 @@ public class BidActivity extends Activity implements SearchView.OnQueryTextListe
         _viewHolder.itemPrice.setTextColor(Color.rgb(0, 102, 0));
 
         if (_item.isBidding()) {
-            User user = ((AuctionApplication) getApplicationContext()).getUser();
+            User user = ((AuctionApplication) getApplication()).getUser();
             if (_item.getWinner().equals(user.getBidder())) {
                 _viewHolder.itemWinning.setVisibility(ImageView.VISIBLE);
                 _viewHolder.itemLosing.setVisibility(ImageView.INVISIBLE);
@@ -277,6 +230,24 @@ public class BidActivity extends Activity implements SearchView.OnQueryTextListe
         alertDialog.show();
     }
 
+    static class ViewHolder {
+        ValueStepper valueStepper;
+        TextView itemName;
+        TextView itemNumber;
+        TextView itemBids;
+        TextView itemPrice;
+        ImageView itemWinning;
+        ImageView itemLosing;
+        ImageView itemFavorite;
+        TextView itemMinimumInc;
+        TextView itemWinner;
+        TextView itemValue;
+        TextView itemDescription;
+        TextView itemDonatedBy;
+
+        String[] bidLabels;
+    }
+
     private class BidTask extends AsyncTask<String, Void, Boolean> {
         private final double _bidPrice;
 
@@ -287,7 +258,8 @@ public class BidActivity extends Activity implements SearchView.OnQueryTextListe
         @Override
         protected Boolean doInBackground(String... params) {
             try {
-                User user = ((AuctionApplication) getApplicationContext()).getUser();
+                ItemDataSource datasource = new ItemDataSource(getApplicationContext());
+                User user = ((AuctionApplication) getApplication()).getUser();
 
                 JSONObject input = new JSONObject();
                 input.put("itemUid", _item.getUid());
@@ -295,9 +267,9 @@ public class BidActivity extends Activity implements SearchView.OnQueryTextListe
 
                 RESTClient.post("/live/bids", user, input.toString());
 
-                _datasource.setIsBidding(_item.getUid());
-                _datasource.setIsWatching(_item.getUid());
-                _item = _datasource.getItem(_item.getUid());
+                datasource.setIsBidding(_item.getUid());
+                datasource.setIsWatching(_item.getUid());
+                _item = datasource.getItem(_item.getUid());
                 return true;
             } catch (IOException e) {
                 Log.e(TAG, "Error bidding.", e);

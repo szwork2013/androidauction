@@ -14,7 +14,6 @@
 
 package com.mobiaware.mobiauction;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,23 +24,10 @@ import android.view.View;
 import android.widget.SearchView;
 import android.widget.TextView;
 
-import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.users.User;
 
-public class AuctionActivity extends Activity implements SearchView.OnQueryTextListener,
-        WSClient.OnMessageListener {
-    static class ViewHolder {
-        TextView winningCount;
-        TextView losingCount;
-        TextView welcomeMsg;
-        TextView bidderNumber;
-    }
-
-    private ItemDataSource _datasource;
-
-    private WSClient _webSocket;
-
+public class AuctionActivity extends WebSocketActivity implements SearchView.OnQueryTextListener {
     private ViewHolder _viewHolder;
 
     public static Intent newInstance(Context context) {
@@ -53,10 +39,6 @@ public class AuctionActivity extends Activity implements SearchView.OnQueryTextL
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_auction);
-
-        _datasource = new ItemDataSource(this);
-
-        _webSocket = new WSClient(this, this);
 
         _viewHolder = new ViewHolder();
         _viewHolder.winningCount = (TextView) findViewById(R.id.textWinningCount);
@@ -99,20 +81,8 @@ public class AuctionActivity extends Activity implements SearchView.OnQueryTextL
     @Override
     protected void onResume() {
         super.onResume();
-        _webSocket.start();
+
         updateView();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        _webSocket.stop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        _webSocket.stop();
     }
 
     @Override
@@ -151,20 +121,24 @@ public class AuctionActivity extends Activity implements SearchView.OnQueryTextL
         updateView();
     }
 
-    @Override
-    public void onFundMessageReceived() {
-        // ignore
-    }
-
     private void updateView() {
-        User user = ((AuctionApplication) getApplicationContext()).getUser();
+        ItemDataSource datasource = new ItemDataSource(getApplicationContext());
+
+        User user = ((AuctionApplication) getApplication()).getUser();
         _viewHolder.welcomeMsg.setText(String.format(getString(R.string.label_welcome),
                 user.getFirstName()));
         _viewHolder.bidderNumber.setText(String.format(getString(R.string.label_bidder),
                 user.getBidder()));
         _viewHolder.winningCount.setText(String.format(getString(R.string.label_winning2),
-                Integer.toString(_datasource.getWinningCount(user))));
+                Integer.toString(datasource.getWinningCount(user))));
         _viewHolder.losingCount.setText(String.format(getString(R.string.label_losing2),
-                Integer.toString(_datasource.getLosingCount(user))));
+                Integer.toString(datasource.getLosingCount(user))));
+    }
+
+    static class ViewHolder {
+        TextView winningCount;
+        TextView losingCount;
+        TextView welcomeMsg;
+        TextView bidderNumber;
     }
 }

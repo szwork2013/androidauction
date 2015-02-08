@@ -31,33 +31,16 @@ public class ValueStepper extends LinearLayout {
     private static final long REPEAT_DELAY = 50;
 
     private static final int MINIMUM = 0;
+    private double _minimum = MINIMUM;
     private static final int MAXIMUM = 999;
+    private double _maximum = MAXIMUM;
     private static final int STEP = 1;
-
-    private TextView _valueText;
-
+    private double _step = STEP;
     private final Handler repeatUpdateHandler = new Handler();
-
+    private TextView _valueText;
     private double _value;
-
     private boolean _autoIncrement;
     private boolean _autoDecrement;
-
-    private double _minimum = MINIMUM;
-    private double _maximum = MAXIMUM;
-    private double _step = STEP;
-
-    private class RepetetiveUpdater implements Runnable {
-        public void run() {
-            if (_autoIncrement) {
-                increment();
-                repeatUpdateHandler.postDelayed(new RepetetiveUpdater(), REPEAT_DELAY);
-            } else if (_autoDecrement) {
-                decrement();
-                repeatUpdateHandler.postDelayed(new RepetetiveUpdater(), REPEAT_DELAY);
-            }
-        }
-    }
 
     public ValueStepper(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -180,5 +163,17 @@ public class ValueStepper extends LinearLayout {
 
     private void updateTextField() {
         _valueText.setText(FormatUtils.valueToString(_value));
+    }
+
+    private class RepetetiveUpdater implements Runnable {
+        public void run() {
+            if (_autoIncrement) {
+                increment();
+                repeatUpdateHandler.postDelayed(new RepetetiveUpdater(), REPEAT_DELAY);
+            } else if (_autoDecrement) {
+                decrement();
+                repeatUpdateHandler.postDelayed(new RepetetiveUpdater(), REPEAT_DELAY);
+            }
+        }
     }
 }

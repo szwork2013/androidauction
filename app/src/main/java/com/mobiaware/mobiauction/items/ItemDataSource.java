@@ -41,6 +41,14 @@ public class ItemDataSource {
         _contentResolver = context.getContentResolver();
     }
 
+    public static Item cursorToItem(Cursor cursor) {
+        return new Item(cursor.getLong(0), cursor.getString(1), cursor.getString(2),
+                cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getDouble(6),
+                cursor.getDouble(7), cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10),
+                cursor.getLong(11), cursor.getLong(12), cursor.getString(13), cursor.getLong(14) != 0,
+                cursor.getLong(15) != 0, cursor.getLong(16) != 0);
+    }
+
     public void createItem(long uid, String number, String name, String description, String category,
                            String seller, double valPrice, double minPrice, double incPrice, double curPrice,
                            String winner, long bidCount, long watchCount, String url, boolean multi) {
@@ -78,7 +86,7 @@ public class ItemDataSource {
 
     public Item getItem(long uid) {
         Uri uri = ContentUris.withAppendedId(ItemContentProvider.CONTENT_URI, uid);
-        Cursor cursor= _contentResolver.query(uri, ALL_COLUMNS, null, null, null);
+        Cursor cursor = _contentResolver.query(uri, ALL_COLUMNS, null, null, null);
         cursor.moveToFirst();
         return cursorToItem(cursor);
     }
@@ -111,13 +119,5 @@ public class ItemDataSource {
                 ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 AND " + ItemSQLiteHelper.COLUMN_WINNER + "!=?",
                 new String[]{user.getBidder()}, null);
         return cursor.getCount();
-    }
-
-    public static Item cursorToItem(Cursor cursor) {
-        return new Item(cursor.getLong(0), cursor.getString(1), cursor.getString(2),
-                cursor.getString(3), cursor.getString(4), cursor.getString(5), cursor.getDouble(6),
-                cursor.getDouble(7), cursor.getDouble(8), cursor.getDouble(9), cursor.getString(10),
-                cursor.getLong(11), cursor.getLong(12), cursor.getString(13), cursor.getLong(14) != 0,
-                cursor.getLong(15) != 0, cursor.getLong(16) != 0);
     }
 }

@@ -1,7 +1,6 @@
 package com.mobiaware.mobiauction;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -23,7 +22,6 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
-import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.items.ItemContentProvider;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
@@ -35,32 +33,25 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class ItemListActivity extends Activity implements SearchView.OnQueryTextListener, LoaderManager.LoaderCallbacks<Cursor>,
-        WSClient.OnMessageListener {
-    private static final String TAG = ItemListActivity.class.getName();
-
-    private static final String ARG_TYPE = "type";
-    private static final String ARG_FILTER = "filter";
-
+public class ItemListActivity extends WebSocketActivity implements SearchView.OnQueryTextListener, LoaderManager.LoaderCallbacks<Cursor> {
     public static final int TYPE_ALL = 100;
     public static final int TYPE_MYITEMS = 200;
     public static final int TYPE_LOWBIDS = 300;
     public static final int TYPE_SEARCH = 400;
-
+    private static final String TAG = ItemListActivity.class.getName();
+    private static final String ARG_TYPE = "type";
+    private static final String ARG_FILTER = "filter";
     private SwipeRefreshLayout _swipeContainer;
 
     private int _type;
     private String _filter;
 
-    private ItemDataSource _datasource;
     private ItemListItemsAdapter _adapter;
 
     private LoaderManager _loaderManager;
     private CursorLoader _cursorLoader;
 
     private GetItemsTask _getItemsTask;
-
-    private WSClient _webSocket;
 
     public static Intent newInstance(Context context, int type, String filter) {
         Intent intent = new Intent(context, ItemListActivity.class);
@@ -76,13 +67,10 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
         _type = getIntent().getIntExtra(ARG_TYPE, 0);
         _filter = getIntent().getStringExtra(ARG_FILTER);
 
-        _datasource = new ItemDataSource(this);
         _adapter = new ItemListItemsAdapter(this, null);
 
         _loaderManager = getLoaderManager();
         _loaderManager.initLoader(_type, null, this);
-
-        _webSocket = new WSClient(this, this);
 
         setContentView(R.layout.activity_item_list);
 
@@ -113,7 +101,8 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
 
         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {}
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+            }
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
@@ -129,24 +118,6 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
         });
 
         listView.setAdapter(_adapter);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        _webSocket.start();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        _webSocket.stop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        _webSocket.stop();
     }
 
     @Override
@@ -195,7 +166,7 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
             case TYPE_MYITEMS:
-                User user = ((AuctionApplication) getApplicationContext()).getUser();
+                User user = ((AuctionApplication) getApplication()).getUser();
                 _cursorLoader =
                         new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
                                 ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 or " + ItemSQLiteHelper.COLUMN_ISWATCHING
@@ -263,7 +234,7 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
             return;
         }
 
-        User user = ((AuctionApplication) getApplicationContext()).getUser();
+        User user = ((AuctionApplication) getApplication()).getUser();
         _getItemsTask = new GetItemsTask(user);
         _getItemsTask.execute();
     }
@@ -307,6 +278,8 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
         }
 
         private void fetchItems() throws IOException, JSONException {
+            ItemDataSource datasource = new ItemDataSource(getApplicationContext());
+
             String response = RESTClient.get("/event/auctions/1/items", null);
 
             JSONArray array = new JSONArray(response);
@@ -314,7 +287,7 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
             for (int i = 0; i < array.length(); i++) {
                 JSONObject object = array.getJSONObject(i);
 
-                _datasource.createItem(object.getLong("uid"), object.getString("itemNumber"),
+                datasource.createItem(object.getLong("uid"), object.getString("itemNumber"),
                         object.getString("name"), object.getString("description"),
                         object.getString("category"), object.getString("seller"), object.getDouble("valPrice"),
                         object.getDouble("minPrice"), object.getDouble("incPrice"),
@@ -325,24 +298,28 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
         }
 
         private void fetchBids(String bidder, String password) throws IOException, JSONException {
+            ItemDataSource datasource = new ItemDataSource(getApplicationContext());
+
             String response = RESTClient.get("/live/bids", bidder, password);
 
             JSONArray array = new JSONArray(response);
 
             for (int i = 0; i < array.length(); i++) {
                 JSONObject object = array.getJSONObject(i);
-                _datasource.setIsBidding(object.getLong("uid"));
+                datasource.setIsBidding(object.getLong("uid"));
             }
         }
 
         private void fetchWatches(String bidder, String password) throws IOException, JSONException {
+            ItemDataSource datasource = new ItemDataSource(getApplicationContext());
+
             String response = RESTClient.get("/live/watches", bidder, password);
 
             JSONArray array = new JSONArray(response);
 
             for (int i = 0; i < array.length(); i++) {
                 JSONObject object = array.getJSONObject(i);
-                _datasource.setIsWatching(object.getLong("uid"));
+                datasource.setIsWatching(object.getLong("uid"));
             }
         }
     }

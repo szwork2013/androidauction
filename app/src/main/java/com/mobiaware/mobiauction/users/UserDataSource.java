@@ -28,9 +28,8 @@ public class UserDataSource {
             UsersSQLiteHelper.COLUMN_AUCTION, UsersSQLiteHelper.COLUMN_BIDDER,
             UsersSQLiteHelper.COLUMN_PASSWORD, UsersSQLiteHelper.COLUMN_FIRSTNAME,
             UsersSQLiteHelper.COLUMN_LASTNAME};
-
-    private SQLiteDatabase _database;
     private final UsersSQLiteHelper _databaseHelper;
+    private SQLiteDatabase _database;
 
     public UserDataSource(Context context) {
         _databaseHelper = new UsersSQLiteHelper(context);

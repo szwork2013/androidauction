@@ -172,8 +172,8 @@ public class LoginActivity extends Activity {
             hideProgress();
 
             if (user != null) {
-                ((AuctionApplication) getApplicationContext()).setUser(user);
-                startActivity(new Intent(getApplicationContext(), AuctionActivity.class));
+                ((AuctionApplication) getApplication()).setUser(user);
+                startActivity(AuctionActivity.newInstance(getApplicationContext()));
                 finish();
             } else {
                 _passwordView.setError(getString(R.string.error_incorrect_password));

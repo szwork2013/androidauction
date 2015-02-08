@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        User user = ((AuctionApplication) getApplicationContext()).getUser();
+        User user = ((AuctionApplication) getApplication()).getUser();
         if (user != null) {
             startActivity(AuctionActivity.newInstance(getApplicationContext()));
         } else {

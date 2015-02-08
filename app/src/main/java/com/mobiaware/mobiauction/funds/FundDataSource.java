@@ -25,9 +25,8 @@ import com.mobiaware.mobiauction.utils.CloseUtils;
 public class FundDataSource {
     private static final String[] ALL_COLUMNS = {FundsSQLiteHelper.COLUMN_AUCTION,
             FundsSQLiteHelper.COLUMN_VALUE, FundsSQLiteHelper.COLUMN_NAME};
-
-    private SQLiteDatabase _database;
     private final FundsSQLiteHelper _databaseHelper;
+    private SQLiteDatabase _database;
 
     public FundDataSource(Context context) {
         _databaseHelper = new FundsSQLiteHelper(context);

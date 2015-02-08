@@ -12,15 +12,17 @@
  * the License.
  */
 
-package com.mobiaware.mobiauction.api;
+package com.mobiaware.mobiauction;
 
-import android.content.Context;
+import android.app.Activity;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.os.Bundle;
+import android.widget.Toast;
 
-import com.mobiaware.mobiauction.AuctionApplication;
 import com.mobiaware.mobiauction.funds.Fund;
+import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.items.ItemDataSource;
+import com.mobiaware.mobiauction.users.User;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,97 +31,135 @@ import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
 
-public class WSClient {
-    private static final String TAG = WSClient.class.getName();
-
+public abstract class WebSocketActivity extends Activity {
     private static final String API_WS = "ws://mobiaware.com/liveauction/notify";
 
     private static enum MessageType {
-        INVALID, ITEM_MESSAGE, FUND_MESSAGE
+        INVALID, ITEM, FUND, OUTBID
     }
 
-    public static interface OnMessageListener {
-        void onItemMessageReceived();
-        void onFundMessageReceived();
-    }
+    private WebSocketConnection _connection;
 
-    private final Context _context;
-
-    private final WebSocketConnection _connection;
-    private final OnMessageListener _listener;
-
-    public WSClient(Context context, OnMessageListener listener) {
-        _context = context;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
         _connection = new WebSocketConnection();
-        _listener = listener;
     }
 
-    public void start() {
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        stop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        stop();
+    }
+
+    public void onItemMessageReceived() {
+        // nothing
+    }
+
+    public void onFundMessageReceived() {
+        // nothing
+    }
+
+    public void onOutbidMessageReceived() {
+        Toast.makeText(this, "You have been outbid!", Toast.LENGTH_SHORT).show();
+        onItemMessageReceived();
+    }
+
+    private void start() {
         try {
             _connection.connect(API_WS, new WebSocketHandler() {
                 @Override
                 public void onOpen() {
-                    Log.d(TAG, "Status: Connection opened." + API_WS);
+                    // TODO
                 }
 
                 @Override
                 public void onTextMessage(String payload) {
-                    MessageTask m = new MessageTask();
-                    m.execute(payload);
+                    TextMessageTask task = new TextMessageTask();
+                    task.execute(payload);
                 }
 
                 @Override
                 public void onClose(int code, String reason) {
-                    Log.d(TAG, "Status: Connection closed.");
+                    // TODO
                 }
             });
         } catch (WebSocketException e) {
-            Log.e(TAG, "Error with websocket:", e);
+            // TODO
         }
     }
 
-    public void stop() {
+    private void stop() {
         if (_connection.isConnected()) {
             _connection.disconnect();
         }
     }
 
-    private class MessageTask extends AsyncTask<String, Void, MessageType> {
+    private class TextMessageTask extends AsyncTask<String, Void, MessageType> {
         @Override
         protected MessageType doInBackground(String... params) {
             try {
                 JSONObject object = new JSONObject(params[0]);
                 if (object.has("liveauction-item")) {
                     JSONObject json = object.getJSONObject("liveauction-item");
-                    ItemDataSource datasource = new ItemDataSource(_context);
+
+                    MessageType type = MessageType.ITEM;
+                    ItemDataSource datasource = new ItemDataSource(getApplicationContext());
+
+                    Item tmp = datasource.getItem(json.getLong("uid"));
+                    if (tmp.isBidding()) {
+                        User user = ((AuctionApplication) getApplication()).getUser();
+                        boolean isWinningNow = user.getBidder().equals(tmp.getWinner());
+                        boolean isWinningAfter = user.getBidder().equals(json.getString("winner"));
+                        if (isWinningNow && !isWinningAfter) {
+
+                            type = MessageType.OUTBID;
+                        }
+                    }
+
                     datasource.updateItem(json.getLong("uid"), json.getDouble("curPrice"),
                             json.getString("winner"), json.optLong("bidCount", 0), json.optLong("watchCount", 0));
-                    return MessageType.ITEM_MESSAGE;
+                    return type;
                 } else if (object.has("liveauction-fund")) {
                     JSONObject json = object.getJSONObject("liveauction-fund");
                     Fund fund = new Fund(1, json.getDouble("sum"), json.getString("name"));
-                    ((AuctionApplication) _context.getApplicationContext()).setFund(fund);
-                    return MessageType.FUND_MESSAGE;
+                    getApplication();
+                    ((AuctionApplication) getApplicationContext()).setFund(fund);
+                    return MessageType.FUND;
                 }
             } catch (JSONException e) {
-                Log.e(TAG, "Error with websocket:", e);
+                // TODO
             }
             return MessageType.INVALID;
         }
 
         @Override
         protected void onPostExecute(MessageType value) {
-            if (_listener == null) {
-                return;
-            }
-
             switch (value) {
-                case ITEM_MESSAGE:
-                    _listener.onItemMessageReceived();
+                case ITEM:
+                    onItemMessageReceived();
                     break;
-                case FUND_MESSAGE:
-                    _listener.onFundMessageReceived();
+                case FUND:
+                    onFundMessageReceived();
+                    break;
+                case OUTBID:
+                    onOutbidMessageReceived();
                     break;
             }
         }

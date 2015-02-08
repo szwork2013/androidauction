@@ -39,10 +39,6 @@ public class ItemSQLiteHelper extends SQLiteOpenHelper {
     public static final String COLUMN_MULTI = "multi";
     public static final String COLUMN_ISBIDDING = "isbidding";
     public static final String COLUMN_ISWATCHING = "iswatching";
-
-    private static final String DATABASE_NAME = "items.db";
-    private static final int DATABASE_VERSION = 1;
-
     // NOTE: uid comes from the liveauction service and is used as the primary key
     private static final String DATABASE_CREATE = "CREATE TABLE " + TABLE_ITEMS + "(" + COLUMN_UID
             + " INTEGER PRIMARY KEY," + COLUMN_NUMBER + " TEXT UNIQUE NOT NULL, " + COLUMN_NAME
@@ -51,6 +47,8 @@ public class ItemSQLiteHelper extends SQLiteOpenHelper {
             + " REAL, " + COLUMN_CURPRICE + " REAL, " + COLUMN_WINNER + " TEXT, " + COLUMN_BIDCOUNT
             + " INTEGER, " + COLUMN_WATCHCOUNT + " INTEGER, " + COLUMN_URL + " TEXT, " + COLUMN_MULTI
             + " INTEGER," + COLUMN_ISBIDDING + " INTEGER," + COLUMN_ISWATCHING + " INTEGER" + ");";
+    private static final String DATABASE_NAME = "items.db";
+    private static final int DATABASE_VERSION = 1;
 
     public ItemSQLiteHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

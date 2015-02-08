@@ -15,7 +15,6 @@
 package com.mobiaware.mobiauction;
 
 import android.app.ActionBar;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -34,7 +33,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
-import com.mobiaware.mobiauction.api.WSClient;
 import com.mobiaware.mobiauction.controls.ValueStepper;
 import com.mobiaware.mobiauction.funds.Fund;
 import com.mobiaware.mobiauction.users.User;
@@ -45,23 +43,13 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class FundActivity extends Activity implements SearchView.OnQueryTextListener,
-        WSClient.OnMessageListener {
+public class FundActivity extends WebSocketActivity implements SearchView.OnQueryTextListener {
     private static final String TAG = FundActivity.class.getName();
 
     private static final double FUND_VALUE_ONE = 25.0;
     private static final double FUND_VALUE_TWO = 50.0;
     private static final double FUND_VALUE_THREE = 100.0;
-
-    static class ViewHolder {
-        ValueStepper fundValueStepper;
-        TextView fundValueTextView;
-    }
-
-    private WSClient _webSocket;
-
     private ViewHolder _viewHolder;
-
     private FundTask _fundTask;
 
     public static Intent newInstance(Context context) {
@@ -73,8 +61,6 @@ public class FundActivity extends Activity implements SearchView.OnQueryTextList
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_fund);
-
-        _webSocket = new WSClient(this, this);
 
         _viewHolder = new ViewHolder();
         _viewHolder.fundValueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
@@ -122,20 +108,8 @@ public class FundActivity extends Activity implements SearchView.OnQueryTextList
     @Override
     protected void onResume() {
         super.onResume();
-        _webSocket.start();
+
         updateView();
-    }
-
-    @Override
-    protected void onPause() {
-        _webSocket.stop();
-        super.onPause();
-    }
-
-    @Override
-    protected void onDestroy() {
-        _webSocket.stop();
-        super.onDestroy();
     }
 
     @Override
@@ -170,11 +144,6 @@ public class FundActivity extends Activity implements SearchView.OnQueryTextList
     }
 
     @Override
-    public void onItemMessageReceived() {
-        // ignore
-    }
-
-    @Override
     public void onFundMessageReceived() {
         updateView();
     }
@@ -190,7 +159,7 @@ public class FundActivity extends Activity implements SearchView.OnQueryTextList
     }
 
     private void updateView() {
-        Fund fund = ((AuctionApplication) getApplicationContext()).getFund();
+        Fund fund = ((AuctionApplication) getApplication()).getFund();
         _viewHolder.fundValueTextView.setText(FormatUtils.valueToString(fund.getValue()));
         _viewHolder.fundValueTextView.setTextColor(Color.rgb(0, 102, 0));
     }
@@ -220,6 +189,11 @@ public class FundActivity extends Activity implements SearchView.OnQueryTextList
         alertDialog.show();
     }
 
+    static class ViewHolder {
+        ValueStepper fundValueStepper;
+        TextView fundValueTextView;
+    }
+
     private class FundTask extends AsyncTask<String, Void, Double> {
         private final double _fundPrice;
 
@@ -230,7 +204,7 @@ public class FundActivity extends Activity implements SearchView.OnQueryTextList
         @Override
         protected Double doInBackground(String... params) {
             try {
-                User user = ((AuctionApplication) getApplicationContext()).getUser();
+                User user = ((AuctionApplication) getApplication()).getUser();
 
                 JSONObject input = new JSONObject();
                 input.put("auctionUid", 1);
