@@ -27,6 +27,7 @@ import com.mobiaware.mobiauction.items.ItemContentProvider;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
 import com.mobiaware.mobiauction.users.User;
+import com.mobiaware.mobiauction.utils.CloseUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -93,10 +94,11 @@ public class ItemListActivity extends WebSocketActivity implements SearchView.On
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor cursor = _adapter.getCursor();
-                cursor.moveToPosition(position);
-                Item item = ItemDataSource.cursorToItem(cursor);
-                startActivity(BidActivity.newInstance(getApplicationContext(), item.getUid()));
+                Cursor cursor = (Cursor) listView.getItemAtPosition(position);
+                if (cursor != null) {
+                    Item item = ItemDataSource.cursorToItem(cursor);
+                    startActivity(BidActivity.newInstance(getApplicationContext(), item.getUid()));
+                }
             }
         });
 

@@ -23,17 +23,19 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 
 import com.mobiaware.mobiauction.users.User;
+import com.mobiaware.mobiauction.utils.CloseUtils;
 
 public class ItemDataSource {
-    public static final String[] ALL_COLUMNS = {ItemSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID,
-            ItemSQLiteHelper.COLUMN_NUMBER, ItemSQLiteHelper.COLUMN_NAME,
-            ItemSQLiteHelper.COLUMN_DESCRIPTION, ItemSQLiteHelper.COLUMN_CATEGORY,
-            ItemSQLiteHelper.COLUMN_SELLER, ItemSQLiteHelper.COLUMN_VALPRICE,
-            ItemSQLiteHelper.COLUMN_MINPRICE, ItemSQLiteHelper.COLUMN_INCPRICE,
-            ItemSQLiteHelper.COLUMN_CURPRICE, ItemSQLiteHelper.COLUMN_WINNER,
-            ItemSQLiteHelper.COLUMN_BIDCOUNT, ItemSQLiteHelper.COLUMN_WATCHCOUNT,
-            ItemSQLiteHelper.COLUMN_URL, ItemSQLiteHelper.COLUMN_MULTI,
-            ItemSQLiteHelper.COLUMN_ISBIDDING, ItemSQLiteHelper.COLUMN_ISWATCHING};
+    public static final String[] ALL_COLUMNS = {
+            ItemSQLiteHelper.COLUMN_UID + " AS " + BaseColumns._ID, ItemSQLiteHelper.COLUMN_NUMBER,
+            ItemSQLiteHelper.COLUMN_NAME, ItemSQLiteHelper.COLUMN_DESCRIPTION,
+            ItemSQLiteHelper.COLUMN_CATEGORY, ItemSQLiteHelper.COLUMN_SELLER,
+            ItemSQLiteHelper.COLUMN_VALPRICE, ItemSQLiteHelper.COLUMN_MINPRICE,
+            ItemSQLiteHelper.COLUMN_INCPRICE, ItemSQLiteHelper.COLUMN_CURPRICE,
+            ItemSQLiteHelper.COLUMN_WINNER, ItemSQLiteHelper.COLUMN_BIDCOUNT,
+            ItemSQLiteHelper.COLUMN_WATCHCOUNT, ItemSQLiteHelper.COLUMN_URL,
+            ItemSQLiteHelper.COLUMN_MULTI, ItemSQLiteHelper.COLUMN_ISBIDDING,
+            ItemSQLiteHelper.COLUMN_ISWATCHING};
 
     private final ContentResolver _contentResolver;
 
@@ -85,10 +87,20 @@ public class ItemDataSource {
     }
 
     public Item getItem(long uid) {
-        Uri uri = ContentUris.withAppendedId(ItemContentProvider.CONTENT_URI, uid);
-        Cursor cursor = _contentResolver.query(uri, ALL_COLUMNS, null, null, null);
-        cursor.moveToFirst();
-        return cursorToItem(cursor);
+        Cursor cursor = null;
+        try {
+            Uri uri = ContentUris.withAppendedId(ItemContentProvider.CONTENT_URI, uid);
+            cursor = _contentResolver.query(uri, ALL_COLUMNS, null, null, null);
+
+            if (cursor == null || cursor.getCount() == 0) {
+                return null; // < 1 means no item
+            }
+
+            cursor.moveToFirst();
+            return cursorToItem(cursor);
+        } finally {
+            CloseUtils.closeQuietly(cursor);
+        }
     }
 
     public long setIsBidding(long uid) {
@@ -96,7 +108,7 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_ISBIDDING, 1);
 
         return _contentResolver.update(ItemContentProvider.CONTENT_URI, values,
-                ItemSQLiteHelper.COLUMN_UID + "=?", new String[]{Long.toString(uid)});
+                ItemSQLiteHelper.COLUMN_UID + "=?", new String[] {Long.toString(uid)});
     }
 
     public long setIsWatching(long uid) {
@@ -104,20 +116,43 @@ public class ItemDataSource {
         values.put(ItemSQLiteHelper.COLUMN_ISWATCHING, 1);
 
         return _contentResolver.update(ItemContentProvider.CONTENT_URI, values,
-                ItemSQLiteHelper.COLUMN_UID + "=?", new String[]{Long.toString(uid)});
+                ItemSQLiteHelper.COLUMN_UID + "=?", new String[] {Long.toString(uid)});
     }
 
     public int getWinningCount(User user) {
-        Cursor cursor = _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
-                ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 AND " + ItemSQLiteHelper.COLUMN_WINNER + "=?",
-                new String[]{user.getBidder()}, null);
-        return cursor.getCount();
+        Cursor cursor = null;
+        try {
+            cursor =
+                    _contentResolver
+                            .query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
+                                    ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 AND " + ItemSQLiteHelper.COLUMN_WINNER
+                                            + "=?", new String[] {user.getBidder()}, null);
+
+            if (cursor == null) {
+                return 0;
+            }
+
+            return cursor.getCount();
+        } finally {
+            CloseUtils.closeQuietly(cursor);
+        }
     }
 
     public int getLosingCount(User user) {
-        Cursor cursor = _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
-                ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 AND " + ItemSQLiteHelper.COLUMN_WINNER + "!=?",
-                new String[]{user.getBidder()}, null);
-        return cursor.getCount();
+        Cursor cursor = null;
+        try {
+            cursor =
+                    _contentResolver.query(ItemContentProvider.CONTENT_URI, ALL_COLUMNS,
+                            ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 AND " + ItemSQLiteHelper.COLUMN_WINNER
+                                    + "!=?", new String[] {user.getBidder()}, null);
+
+            if (cursor == null) {
+                return 0;
+            }
+
+            return cursor.getCount();
+        } finally {
+            CloseUtils.closeQuietly(cursor);
+        }
     }
 }

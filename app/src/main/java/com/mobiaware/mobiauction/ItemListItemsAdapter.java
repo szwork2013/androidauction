@@ -32,6 +32,19 @@ import com.mobiaware.mobiauction.utils.FormatUtils;
 import com.squareup.picasso.Picasso;
 
 public class ItemListItemsAdapter extends CursorAdapter {
+    static class ViewHolder {
+        TextView itemName;
+        TextView itemNumber;
+        TextView itemBids;
+        TextView itemPrice;
+        ImageView itemWinning;
+        ImageView itemLosing;
+        ImageView itemFavorite;
+        ImageView itemImage;
+
+        String[] bidLabels;
+    }
+
     private ViewHolder _viewHolder;
 
     public ItemListItemsAdapter(Context context, Cursor cursor) {
@@ -103,20 +116,8 @@ public class ItemListItemsAdapter extends CursorAdapter {
         if (TextUtils.isEmpty(item.getUrl())) {
             viewHolder.itemImage.setImageResource(R.drawable.ic_nophoto);
         } else {
-            Picasso.with(context).load(item.getUrl()).into(viewHolder.itemImage);
+            viewHolder.itemImage.setImageResource(R.drawable.ic_nophoto);
+            //Picasso.with(context).load(item.getUrl()).into(viewHolder.itemImage);
         }
-    }
-
-    static class ViewHolder {
-        TextView itemName;
-        TextView itemNumber;
-        TextView itemBids;
-        TextView itemPrice;
-        ImageView itemWinning;
-        ImageView itemLosing;
-        ImageView itemFavorite;
-        ImageView itemImage;
-
-        String[] bidLabels;
     }
 }

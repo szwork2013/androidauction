@@ -71,7 +71,7 @@ public class UserDataSource {
                 return null; // < 1 means no login
             }
 
-            cursor.moveToLast(); // use last entry for login
+            cursor.moveToLast();
             return cursorToUser(cursor);
         } finally {
             CloseUtils.closeQuietly(cursor);
