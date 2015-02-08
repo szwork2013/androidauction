@@ -116,8 +116,8 @@ public class ItemListItemsAdapter extends CursorAdapter {
         if (TextUtils.isEmpty(item.getUrl())) {
             viewHolder.itemImage.setImageResource(R.drawable.ic_nophoto);
         } else {
-            viewHolder.itemImage.setImageResource(R.drawable.ic_nophoto);
-            //Picasso.with(context).load(item.getUrl()).into(viewHolder.itemImage);
+            Picasso.with(context).load(item.getUrl()).placeholder(R.drawable.ic_nophoto)
+                    .tag(context).fit().centerCrop().into(viewHolder.itemImage);
         }
     }
 }
