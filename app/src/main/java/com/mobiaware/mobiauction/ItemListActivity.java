@@ -22,6 +22,7 @@ import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.api.RESTClient;
+import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.items.ItemContentProvider;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
@@ -94,8 +95,8 @@ public class ItemListActivity extends WebSocketActivity implements SearchView.On
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor cursor = _adapter.getCursor();
                 cursor.moveToPosition(position);
-                startActivity(BidActivity.newInstance(getApplicationContext(),
-                        ItemDataSource.cursorToItem(cursor)));
+                Item item = ItemDataSource.cursorToItem(cursor);
+                startActivity(BidActivity.newInstance(getApplicationContext(), item.getUid()));
             }
         });
 

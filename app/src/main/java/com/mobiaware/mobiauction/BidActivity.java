@@ -48,16 +48,35 @@ import java.io.IOException;
 
 public class BidActivity extends WebSocketActivity implements SearchView.OnQueryTextListener {
     private static final String TAG = BidActivity.class.getName();
-
     private static final String ARG_ITEM = "item";
 
-    private Item _item;
+    private static class ViewHolder {
+        ValueStepper valueStepper;
+        TextView itemName;
+        TextView itemNumber;
+        TextView itemBids;
+        TextView itemPrice;
+        ImageView itemWinning;
+        ImageView itemLosing;
+        ImageView itemFavorite;
+        TextView itemMinimumInc;
+        TextView itemWinner;
+        TextView itemValue;
+        TextView itemDescription;
+        TextView itemDonatedBy;
+
+        String[] bidLabels;
+    }
+
     private ViewHolder _viewHolder;
+
+    private long _itemUid;
+
     private BidTask _bidTask;
 
-    public static Intent newInstance(Context context, Item item) {
+    public static Intent newInstance(Context context, long itemUid) {
         Intent intent = new Intent(context, BidActivity.class);
-        intent.putExtra(ARG_ITEM, item);
+        intent.putExtra(ARG_ITEM, itemUid);
         return intent;
     }
 
@@ -67,7 +86,7 @@ public class BidActivity extends WebSocketActivity implements SearchView.OnQuery
 
         setContentView(R.layout.activity_bid);
 
-        _item = getIntent().getExtras().getParcelable(ARG_ITEM);
+        _itemUid = getIntent().getLongExtra(ARG_ITEM, 0);
 
         _viewHolder = new ViewHolder();
         _viewHolder.valueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
@@ -107,8 +126,6 @@ public class BidActivity extends WebSocketActivity implements SearchView.OnQuery
 
     @Override
     public void onItemMessageReceived() {
-        ItemDataSource datasource = new ItemDataSource(getApplicationContext());
-        _item = datasource.getItem(_item.getUid());
         updateView();
     }
 
@@ -154,25 +171,28 @@ public class BidActivity extends WebSocketActivity implements SearchView.OnQuery
     }
 
     private void updateView() {
-        _viewHolder.itemName.setText(_item.getName());
-        _viewHolder.itemNumber.setText(_item.getNumber());
+        ItemDataSource datasource = new ItemDataSource(getApplicationContext());
+        Item item = datasource.getItem(_itemUid);
 
-        long bids = _item.getBidCount();
+        _viewHolder.itemName.setText(item.getName());
+        _viewHolder.itemNumber.setText(item.getNumber());
+
+        long bids = item.getBidCount();
         if (bids == 0) {
             _viewHolder.itemBids.setText(_viewHolder.bidLabels[0]);
         } else if (bids == 1) {
             _viewHolder.itemBids.setText(_viewHolder.bidLabels[1]);
         } else {
             _viewHolder.itemBids.setText(String.format(_viewHolder.bidLabels[2],
-                    Long.toString(_item.getBidCount())));
+                    Long.toString(item.getBidCount())));
         }
 
-        _viewHolder.itemPrice.setText(FormatUtils.valueToString(_item.getCurPrice()));
+        _viewHolder.itemPrice.setText(FormatUtils.valueToString(item.getCurPrice()));
         _viewHolder.itemPrice.setTextColor(Color.rgb(0, 102, 0));
 
-        if (_item.isBidding()) {
+        if (item.isBidding()) {
             User user = ((AuctionApplication) getApplication()).getUser();
-            if (_item.getWinner().equals(user.getBidder())) {
+            if (item.getWinner().equals(user.getBidder())) {
                 _viewHolder.itemWinning.setVisibility(ImageView.VISIBLE);
                 _viewHolder.itemLosing.setVisibility(ImageView.INVISIBLE);
                 _viewHolder.itemFavorite.setVisibility(ImageView.INVISIBLE);
@@ -181,7 +201,7 @@ public class BidActivity extends WebSocketActivity implements SearchView.OnQuery
                 _viewHolder.itemLosing.setVisibility(ImageView.VISIBLE);
                 _viewHolder.itemFavorite.setVisibility(ImageView.INVISIBLE);
             }
-        } else if (_item.isWatching()) {
+        } else if (item.isWatching()) {
             _viewHolder.itemWinning.setVisibility(ImageView.INVISIBLE);
             _viewHolder.itemLosing.setVisibility(ImageView.INVISIBLE);
             _viewHolder.itemFavorite.setVisibility(ImageView.VISIBLE);
@@ -191,16 +211,16 @@ public class BidActivity extends WebSocketActivity implements SearchView.OnQuery
             _viewHolder.itemFavorite.setVisibility(ImageView.INVISIBLE);
         }
 
-        _viewHolder.itemMinimumInc.setText(FormatUtils.valueToString(_item.getIncPrice()));
-        _viewHolder.itemWinner.setText(_item.getWinner());
-        _viewHolder.itemValue.setText(FormatUtils.valueToString(_item.getValPrice()));
-        _viewHolder.itemDescription.setText(_item.getDescription());
-        _viewHolder.itemDonatedBy.setText(_item.getSeller());
+        _viewHolder.itemMinimumInc.setText(FormatUtils.valueToString(item.getIncPrice()));
+        _viewHolder.itemWinner.setText(item.getWinner());
+        _viewHolder.itemValue.setText(FormatUtils.valueToString(item.getValPrice()));
+        _viewHolder.itemDescription.setText(item.getDescription());
+        _viewHolder.itemDonatedBy.setText(item.getSeller());
 
-        double bidValue = Math.max(_item.getMinPrice(), _item.getCurPrice() + _item.getIncPrice());
+        double bidValue = Math.max(item.getMinPrice(), item.getCurPrice() + item.getIncPrice());
         _viewHolder.valueStepper.setMinimum(bidValue);
-        _viewHolder.valueStepper.setStep(_item.getIncPrice());
-        _viewHolder.valueStepper.setMaximum(_item.getCurPrice() + 500);
+        _viewHolder.valueStepper.setStep(item.getIncPrice());
+        _viewHolder.valueStepper.setMaximum(item.getCurPrice() + 500);
         _viewHolder.valueStepper.setValue(bidValue);
     }
 
@@ -230,24 +250,6 @@ public class BidActivity extends WebSocketActivity implements SearchView.OnQuery
         alertDialog.show();
     }
 
-    static class ViewHolder {
-        ValueStepper valueStepper;
-        TextView itemName;
-        TextView itemNumber;
-        TextView itemBids;
-        TextView itemPrice;
-        ImageView itemWinning;
-        ImageView itemLosing;
-        ImageView itemFavorite;
-        TextView itemMinimumInc;
-        TextView itemWinner;
-        TextView itemValue;
-        TextView itemDescription;
-        TextView itemDonatedBy;
-
-        String[] bidLabels;
-    }
-
     private class BidTask extends AsyncTask<String, Void, Boolean> {
         private final double _bidPrice;
 
@@ -262,14 +264,13 @@ public class BidActivity extends WebSocketActivity implements SearchView.OnQuery
                 User user = ((AuctionApplication) getApplication()).getUser();
 
                 JSONObject input = new JSONObject();
-                input.put("itemUid", _item.getUid());
+                input.put("itemUid", _itemUid);
                 input.put("bidPrice", _bidPrice);
 
                 RESTClient.post("/live/bids", user, input.toString());
 
-                datasource.setIsBidding(_item.getUid());
-                datasource.setIsWatching(_item.getUid());
-                _item = datasource.getItem(_item.getUid());
+                datasource.setIsBidding(_itemUid);
+                datasource.setIsWatching(_itemUid);
                 return true;
             } catch (IOException e) {
                 Log.e(TAG, "Error bidding.", e);
