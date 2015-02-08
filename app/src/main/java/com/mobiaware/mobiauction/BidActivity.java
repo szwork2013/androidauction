@@ -47,20 +47,39 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 
-public class BidActivity extends Activity  implements SearchView.OnQueryTextListener, WSClient.OnMessageListener {
+public class BidActivity extends Activity implements SearchView.OnQueryTextListener,
+        WSClient.OnMessageListener {
     private static final String TAG = BidActivity.class.getName();
 
     private static final String ARG_ITEM = "item";
 
-    private ValueStepper _bidValueStepper;
+    static class ViewHolder {
+        ValueStepper valueStepper;
+        TextView itemName;
+        TextView itemNumber;
+        TextView itemBids;
+        TextView itemPrice;
+        ImageView itemWinning;
+        ImageView itemLosing;
+        ImageView itemFavorite;
+        TextView itemMinimumInc;
+        TextView itemWinner;
+        TextView itemValue;
+        TextView itemDescription;
+        TextView itemDonatedBy;
+
+        String[] bidLabels;
+    }
 
     private Item _item;
-
-    private BidTask _bidTask;
 
     private ItemDataSource _datasource;
 
     private WSClient _webSocket;
+
+    private ViewHolder _viewHolder;
+
+    private BidTask _bidTask;
 
     public static Intent newInstance(Context context, Item item) {
         Intent intent = new Intent(context, BidActivity.class);
@@ -74,13 +93,29 @@ public class BidActivity extends Activity  implements SearchView.OnQueryTextList
 
         setContentView(R.layout.activity_bid);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
-
         _item = getIntent().getExtras().getParcelable(ARG_ITEM);
 
         _datasource = new ItemDataSource(this);
 
         _webSocket = new WSClient(this, this);
+
+        _viewHolder = new ViewHolder();
+        _viewHolder.valueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
+        _viewHolder.itemName = (TextView) findViewById(R.id.itemName);
+        _viewHolder.itemNumber = (TextView) findViewById(R.id.itemNumber);
+        _viewHolder.itemBids = (TextView) findViewById(R.id.itemBids);
+        _viewHolder.itemPrice = (TextView) findViewById(R.id.itemPrice);
+        _viewHolder.itemWinning = (ImageView) findViewById(R.id.itemWinning);
+        _viewHolder.itemLosing = (ImageView) findViewById(R.id.itemLosing);
+        _viewHolder.itemFavorite = (ImageView) findViewById(R.id.itemFavorite);
+        _viewHolder.itemMinimumInc = (TextView) findViewById(R.id.itemMinimumInc);
+        _viewHolder.itemWinner = (TextView) findViewById(R.id.itemWinner);
+        _viewHolder.itemValue = (TextView) findViewById(R.id.itemValue);
+        _viewHolder.itemDescription = (TextView) findViewById(R.id.itemDescription);
+        _viewHolder.itemDonatedBy = (TextView) findViewById(R.id.itemDonatedBy);
+        _viewHolder.bidLabels = getResources().getStringArray(R.array.label_bid_count);
+
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         findViewById(R.id.itemBid).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -88,14 +123,13 @@ public class BidActivity extends Activity  implements SearchView.OnQueryTextList
                 sendBid();
             }
         });
-
-        updateView();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         _webSocket.start();
+        updateView();
     }
 
     @Override
@@ -141,9 +175,8 @@ public class BidActivity extends Activity  implements SearchView.OnQueryTextList
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (TextUtils.isEmpty(query)) {
-            startActivity(ItemListActivity.newInstance(getApplicationContext(), 0, null));
-        } else {
-            startActivity(ItemListActivity.newInstance(getApplicationContext(), 11, query));
+            startActivity(ItemListActivity.newInstance(getApplicationContext(),
+                    ItemListActivity.TYPE_SEARCH, query));
         }
         return true;
     }
@@ -153,61 +186,65 @@ public class BidActivity extends Activity  implements SearchView.OnQueryTextList
         return false;
     }
 
-    private void updateView() {
-        ((TextView) findViewById(R.id.itemName)).setText(_item.getName());
-        ((TextView) findViewById(R.id.itemNumber)).setText(_item.getNumber());
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-        String[] labels = getResources().getStringArray(R.array.label_bid_count);
+    private void updateView() {
+        _viewHolder.itemName.setText(_item.getName());
+        _viewHolder.itemNumber.setText(_item.getNumber());
 
         long bids = _item.getBidCount();
         if (bids == 0) {
-            ((TextView) findViewById(R.id.itemBids)).setText(labels[0]);
+            _viewHolder.itemBids.setText(_viewHolder.bidLabels[0]);
         } else if (bids == 1) {
-            ((TextView) findViewById(R.id.itemBids)).setText(labels[1]);
+            _viewHolder.itemBids.setText(_viewHolder.bidLabels[1]);
         } else {
-            ((TextView) findViewById(R.id.itemBids)).setText(String.format(labels[2],
+            _viewHolder.itemBids.setText(String.format(_viewHolder.bidLabels[2],
                     Long.toString(_item.getBidCount())));
         }
 
-        ((TextView) findViewById(R.id.itemPrice))
-                .setText(FormatUtils.valueToString(_item.getCurPrice()));
-        ((TextView) findViewById(R.id.itemPrice)).setTextColor(Color.rgb(0, 102, 0));
+        _viewHolder.itemPrice.setText(FormatUtils.valueToString(_item.getCurPrice()));
+        _viewHolder.itemPrice.setTextColor(Color.rgb(0, 102, 0));
 
         if (_item.isBidding()) {
             User user = ((AuctionApplication) getApplicationContext()).getUser();
             if (_item.getWinner().equals(user.getBidder())) {
-                findViewById(R.id.itemWinning).setVisibility(ImageView.VISIBLE);
-                findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
-                findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+                _viewHolder.itemWinning.setVisibility(ImageView.VISIBLE);
+                _viewHolder.itemLosing.setVisibility(ImageView.INVISIBLE);
+                _viewHolder.itemFavorite.setVisibility(ImageView.INVISIBLE);
             } else {
-                findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
-                findViewById(R.id.itemLosing).setVisibility(ImageView.VISIBLE);
-                findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+                _viewHolder.itemWinning.setVisibility(ImageView.INVISIBLE);
+                _viewHolder.itemLosing.setVisibility(ImageView.VISIBLE);
+                _viewHolder.itemFavorite.setVisibility(ImageView.INVISIBLE);
             }
         } else if (_item.isWatching()) {
-            findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
-            findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
-            findViewById(R.id.itemFavorite).setVisibility(ImageView.VISIBLE);
+            _viewHolder.itemWinning.setVisibility(ImageView.INVISIBLE);
+            _viewHolder.itemLosing.setVisibility(ImageView.INVISIBLE);
+            _viewHolder.itemFavorite.setVisibility(ImageView.VISIBLE);
         } else {
-            findViewById(R.id.itemWinning).setVisibility(ImageView.INVISIBLE);
-            findViewById(R.id.itemLosing).setVisibility(ImageView.INVISIBLE);
-            findViewById(R.id.itemFavorite).setVisibility(ImageView.INVISIBLE);
+            _viewHolder.itemWinning.setVisibility(ImageView.INVISIBLE);
+            _viewHolder.itemLosing.setVisibility(ImageView.INVISIBLE);
+            _viewHolder.itemFavorite.setVisibility(ImageView.INVISIBLE);
         }
 
-        ((TextView) findViewById(R.id.itemMinimumInc)).setText(FormatUtils.valueToString(_item
-                .getIncPrice()));
-        ((TextView) findViewById(R.id.itemWinner)).setText(_item.getWinner());
-        ((TextView) findViewById(R.id.itemValue))
-                .setText(FormatUtils.valueToString(_item.getValPrice()));
-        ((TextView) findViewById(R.id.itemDescription)).setText(_item.getDescription());
-        ((TextView) findViewById(R.id.itemDonatedBy)).setText(_item.getSeller());
+        _viewHolder.itemMinimumInc.setText(FormatUtils.valueToString(_item.getIncPrice()));
+        _viewHolder.itemWinner.setText(_item.getWinner());
+        _viewHolder.itemValue.setText(FormatUtils.valueToString(_item.getValPrice()));
+        _viewHolder.itemDescription.setText(_item.getDescription());
+        _viewHolder.itemDonatedBy.setText(_item.getSeller());
 
         double bidValue = Math.max(_item.getMinPrice(), _item.getCurPrice() + _item.getIncPrice());
-        _bidValueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
-        _bidValueStepper.setMinimum(bidValue);
-        _bidValueStepper.setStep(_item.getIncPrice());
-        _bidValueStepper.setMaximum(_item.getCurPrice() + 500);
-        _bidValueStepper.setValue(bidValue);
+        _viewHolder.valueStepper.setMinimum(bidValue);
+        _viewHolder.valueStepper.setStep(_item.getIncPrice());
+        _viewHolder.valueStepper.setMaximum(_item.getCurPrice() + 500);
+        _viewHolder.valueStepper.setValue(bidValue);
     }
 
     private void sendBid() {
@@ -215,13 +252,11 @@ public class BidActivity extends Activity  implements SearchView.OnQueryTextList
             return;
         }
 
-        final double bid = _bidValueStepper.getValue();
+        final double bid = _viewHolder.valueStepper.getValue();
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
 
-        String message =
-                String.format(getString(R.string.bid_prompt),
-                        FormatUtils.valueToString(bid));
+        String message = String.format(getString(R.string.bid_prompt), FormatUtils.valueToString(bid));
         alertDialogBuilder.setMessage(message).setCancelable(false)
                 .setPositiveButton(R.string.prompt_yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
@@ -236,16 +271,6 @@ public class BidActivity extends Activity  implements SearchView.OnQueryTextList
 
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     private class BidTask extends AsyncTask<String, Void, Boolean> {
@@ -268,7 +293,7 @@ public class BidActivity extends Activity  implements SearchView.OnQueryTextList
 
                 _datasource.setIsBidding(_item.getUid());
                 _datasource.setIsWatching(_item.getUid());
-
+                _item = _datasource.getItem(_item.getUid());
                 return true;
             } catch (IOException e) {
                 Log.e(TAG, "Error bidding.", e);

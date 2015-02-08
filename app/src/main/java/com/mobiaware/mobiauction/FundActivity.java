@@ -44,19 +44,22 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 
-public class FundActivity extends Activity  implements SearchView.OnQueryTextListener, WSClient.OnMessageListener {
+public class FundActivity extends Activity implements SearchView.OnQueryTextListener,
+        WSClient.OnMessageListener {
     private static final String TAG = FundActivity.class.getName();
 
     private static final double FUND_VALUE_ONE = 25.0;
     private static final double FUND_VALUE_TWO = 50.0;
     private static final double FUND_VALUE_THREE = 100.0;
 
+    static class ViewHolder {
+        ValueStepper fundValueStepper;
+        TextView fundValueTextView;
+    }
+
     private WSClient _webSocket;
 
-    private TextView _fundValueTextView;
-    private ValueStepper _fundValueStepper;
-
-    private User _user;
+    private ViewHolder _viewHolder;
 
     private FundTask _fundTask;
 
@@ -70,21 +73,18 @@ public class FundActivity extends Activity  implements SearchView.OnQueryTextLis
 
         setContentView(R.layout.activity_fund);
 
+        _webSocket = new WSClient(this, this);
+
+        _viewHolder = new ViewHolder();
+        _viewHolder.fundValueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
+        _viewHolder.fundValueTextView = (TextView) findViewById(R.id.fundValue);
+
+        _viewHolder.fundValueStepper.setMinimum(5);
+        _viewHolder.fundValueStepper.setStep(5);
+        _viewHolder.fundValueStepper.setMaximum(1000);
+        _viewHolder.fundValueStepper.setValue(5);
+
         getActionBar().setDisplayHomeAsUpEnabled(true);
-
-        _user = ((AuctionApplication) getApplicationContext()).getUser();
-
-        _fundValueStepper = (ValueStepper) findViewById(R.id.fundValueStepper);
-        _fundValueStepper.setMinimum(5);
-        _fundValueStepper.setStep(5);
-        _fundValueStepper.setMaximum(1000);
-        _fundValueStepper.setValue(5);
-
-        _fundValueTextView = ((TextView) findViewById(R.id.fundValue));
-        _fundValueTextView.setTextColor(Color.rgb(0, 102, 0));
-
-        Fund fund = ((AuctionApplication) getApplicationContext()).getFund();
-        _fundValueTextView.setText(FormatUtils.valueToString(fund.getValue()));
 
         findViewById(R.id.fundValueOne).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -110,17 +110,16 @@ public class FundActivity extends Activity  implements SearchView.OnQueryTextLis
         findViewById(R.id.fundValueOther).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendFunds(_fundValueStepper.getValue());
+                sendFunds(_viewHolder.fundValueStepper.getValue());
             }
         });
-
-        _webSocket = new WSClient(this, this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         _webSocket.start();
+        updateView();
     }
 
     @Override
@@ -155,9 +154,8 @@ public class FundActivity extends Activity  implements SearchView.OnQueryTextLis
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (TextUtils.isEmpty(query)) {
-            startActivity(ItemListActivity.newInstance(getApplicationContext(), 0, null));
-        } else {
-            startActivity(ItemListActivity.newInstance(getApplicationContext(), 11, query));
+            startActivity(ItemListActivity.newInstance(getApplicationContext(),
+                    ItemListActivity.TYPE_SEARCH, query));
         }
         return true;
     }
@@ -165,6 +163,32 @@ public class FundActivity extends Activity  implements SearchView.OnQueryTextLis
     @Override
     public boolean onQueryTextChange(String newText) {
         return false;
+    }
+
+    @Override
+    public void onItemMessageReceived() {
+        // ignore
+    }
+
+    @Override
+    public void onFundMessageReceived() {
+        updateView();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                NavUtils.navigateUpFromSameTask(this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void updateView() {
+        Fund fund = ((AuctionApplication) getApplicationContext()).getFund();
+        _viewHolder.fundValueTextView.setText(FormatUtils.valueToString(fund.getValue()));
+        _viewHolder.fundValueTextView.setTextColor(Color.rgb(0, 102, 0));
     }
 
     private void sendFunds(final double fundPrice) {
@@ -192,17 +216,6 @@ public class FundActivity extends Activity  implements SearchView.OnQueryTextLis
         alertDialog.show();
     }
 
-    @Override
-    public void onItemMessageReceived() {
-        // ignore
-    }
-
-    @Override
-    public void onFundMessageReceived() {
-        Fund fund = ((AuctionApplication) getApplicationContext()).getFund();
-        _fundValueTextView.setText(FormatUtils.valueToString(fund.getValue()));
-    }
-
     private class FundTask extends AsyncTask<String, Void, Double> {
         private final double _fundPrice;
 
@@ -213,11 +226,13 @@ public class FundActivity extends Activity  implements SearchView.OnQueryTextLis
         @Override
         protected Double doInBackground(String... params) {
             try {
+                User user = ((AuctionApplication) getApplicationContext()).getUser();
+
                 JSONObject input = new JSONObject();
                 input.put("auctionUid", 1);
                 input.put("bidPrice", _fundPrice);
 
-                String response = RESTClient.post("/live/funds", _user, input.toString());
+                String response = RESTClient.post("/live/funds", user, input.toString());
 
                 return Double.parseDouble(response);
             } catch (IOException e) {
@@ -236,22 +251,10 @@ public class FundActivity extends Activity  implements SearchView.OnQueryTextLis
             if (value > 0.0) {
                 Toast.makeText(FundActivity.this, getString(R.string.fund_success), Toast.LENGTH_SHORT)
                         .show();
-
-                _fundValueTextView.setText(FormatUtils.valueToString(value));
             } else {
                 Toast.makeText(FundActivity.this, getString(R.string.fund_failed), Toast.LENGTH_SHORT)
                         .show();
             }
         }
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 }

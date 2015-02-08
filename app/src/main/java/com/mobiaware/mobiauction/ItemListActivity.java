@@ -41,20 +41,24 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
     private static final String ARG_TYPE = "type";
     private static final String ARG_FILTER = "filter";
 
-    private AbsListView _listView;
+    public static final int TYPE_ALL = 100;
+    public static final int TYPE_MYITEMS = 200;
+    public static final int TYPE_LOWBIDS = 300;
+    public static final int TYPE_SEARCH = 400;
+
+
     private SwipeRefreshLayout _swipeContainer;
 
+    private int _type;
+    private String _filter;
+
+    private ItemDataSource _datasource;
     private ItemListItemsAdapter _adapter;
 
     private LoaderManager _loaderManager;
     private CursorLoader _cursorLoader;
 
     private GetItemsTask _getItemsTask;
-
-    private ItemDataSource _datasource;
-
-    private int _type;
-    private String _filter;
 
     private WSClient _webSocket;
 
@@ -73,7 +77,6 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
         _filter = getIntent().getStringExtra(ARG_FILTER);
 
         _datasource = new ItemDataSource(this);
-
         _adapter = new ItemListItemsAdapter(this, null);
 
         _loaderManager = getLoaderManager();
@@ -85,9 +88,17 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
-        _listView = (AbsListView) findViewById(android.R.id.list);
-        _listView.setEmptyView(findViewById(android.R.id.empty));
-        _listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        _swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipecontainer);
+        _swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refreshItems();
+            }
+        });
+
+        final AbsListView listView = (AbsListView) findViewById(android.R.id.list);
+        listView.setEmptyView(findViewById(android.R.id.empty));
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor cursor = _adapter.getCursor();
@@ -97,17 +108,7 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
             }
         });
 
-        _listView.setAdapter(_adapter);
-
-        _swipeContainer = (SwipeRefreshLayout) findViewById(R.id.swipecontainer);
-        _swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                refreshItems();
-            }
-        });
-
-        _listView.setOnScrollListener(new AbsListView.OnScrollListener() {
+        listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {}
 
@@ -115,14 +116,16 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
                                  int totalItemCount) {
                 boolean enable = false;
-                if (_listView != null && _listView.getChildCount() > 0) {
-                    boolean firstItemVisible = _listView.getFirstVisiblePosition() == 0;
-                    boolean topOfFirstItemVisible = _listView.getChildAt(0).getTop() == 0;
+                if (listView != null && listView.getChildCount() > 0) {
+                    boolean firstItemVisible = listView.getFirstVisiblePosition() == 0;
+                    boolean topOfFirstItemVisible = listView.getChildAt(0).getTop() == 0;
                     enable = firstItemVisible && topOfFirstItemVisible;
                 }
                 _swipeContainer.setEnabled(enable);
             }
         });
+
+        listView.setAdapter(_adapter);
     }
 
     @Override
@@ -162,8 +165,6 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 refreshItems();
@@ -172,7 +173,6 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
                 NavUtils.navigateUpFromSameTask(this);
                 return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -191,24 +191,22 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         switch (id) {
-            case 1:
+            case TYPE_MYITEMS:
                 User user = ((AuctionApplication) getApplicationContext()).getUser();
-
                 _cursorLoader =
                         new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
                                 ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 or " + ItemSQLiteHelper.COLUMN_ISWATCHING
                                         + "=1", null, "CASE WHEN " + ItemSQLiteHelper.COLUMN_WINNER + "!="
                                 + user.getBidder() + " THEN 0 ELSE 1 END");
-
                 setTitle("My Items");
                 break;
-            case 2:
+            case TYPE_LOWBIDS:
                 _cursorLoader =
                         new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
                                 ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null, ItemSQLiteHelper.COLUMN_BIDCOUNT);
                 setTitle("Low Bids");
                 break;
-            case 11:
+            case TYPE_SEARCH:
                 _cursorLoader =
                         new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
                                 ItemSQLiteHelper.COLUMN_NUMBER + " like '%" + _filter + "%' or "
@@ -246,7 +244,6 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
         }
 
         User user = ((AuctionApplication) getApplicationContext()).getUser();
-
         _getItemsTask = new GetItemsTask(user);
         _getItemsTask.execute();
     }
@@ -254,10 +251,11 @@ public class ItemListActivity extends Activity implements SearchView.OnQueryText
     @Override
     public boolean onQueryTextSubmit(String query) {
         if (TextUtils.isEmpty(query)) {
-            _loaderManager.restartLoader(0, null, this);
+            _filter = null;
+            _loaderManager.restartLoader(TYPE_ALL, null, this);
         } else {
             _filter = query;
-            _loaderManager.restartLoader(11, null, this);
+            _loaderManager.restartLoader(TYPE_SEARCH, null, this);
         }
         return true;
     }

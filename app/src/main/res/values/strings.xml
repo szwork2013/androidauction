@@ -43,6 +43,8 @@
     <string name="label_fundvalueother">Other</string>
     <string name="label_welcome">Welcome %1$s. Happy Bidding!</string>
     <string name="label_bidder">Bidder#: %1$s</string>
+    <string name="label_winning2">Winning: %1$s</string>
+    <string name="label_losing2">Losing: %1$s</string>
     <string name="title_activity_bid">Details</string>
     <string name="title_activity_item_list">Items</string>
     <string name="title_activity_fund">Fund A Cause</string>
