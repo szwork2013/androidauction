@@ -7,42 +7,39 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
-import android.os.AsyncTask;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.Toast;
 
-import com.mobiaware.mobiauction.api.RESTClient;
 import com.mobiaware.mobiauction.items.Item;
 import com.mobiaware.mobiauction.items.ItemContentProvider;
 import com.mobiaware.mobiauction.items.ItemDataSource;
 import com.mobiaware.mobiauction.items.ItemSQLiteHelper;
+import com.mobiaware.mobiauction.tasks.GetItemsTask;
 import com.mobiaware.mobiauction.users.User;
-import com.mobiaware.mobiauction.utils.CloseUtils;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+public class ItemListActivity extends WebSocketActivity implements SearchView.OnQueryTextListener,
+        LoaderManager.LoaderCallbacks<Cursor> {
+    private static final String TAG = ItemListActivity.class.getName();
 
-import java.io.IOException;
-
-public class ItemListActivity extends WebSocketActivity implements SearchView.OnQueryTextListener, LoaderManager.LoaderCallbacks<Cursor> {
     public static final int TYPE_ALL = 100;
     public static final int TYPE_MYITEMS = 200;
     public static final int TYPE_LOWBIDS = 300;
     public static final int TYPE_SEARCH = 400;
-    private static final String TAG = ItemListActivity.class.getName();
+
     private static final String ARG_TYPE = "type";
     private static final String ARG_FILTER = "filter";
+
     private SwipeRefreshLayout _swipeContainer;
 
     private int _type;
@@ -53,7 +50,7 @@ public class ItemListActivity extends WebSocketActivity implements SearchView.On
     private LoaderManager _loaderManager;
     private CursorLoader _cursorLoader;
 
-    private GetItemsTask _getItemsTask;
+    private RefreshItemsTask _refreshTask;
 
     public static Intent newInstance(Context context, int type, String filter) {
         Intent intent = new Intent(context, ItemListActivity.class);
@@ -104,8 +101,7 @@ public class ItemListActivity extends WebSocketActivity implements SearchView.On
 
         listView.setOnScrollListener(new AbsListView.OnScrollListener() {
             @Override
-            public void onScrollStateChanged(AbsListView view, int scrollState) {
-            }
+            public void onScrollStateChanged(AbsListView view, int scrollState) {}
 
             @Override
             public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount,
@@ -136,6 +132,11 @@ public class ItemListActivity extends WebSocketActivity implements SearchView.On
         searchView.setFocusableInTouchMode(true);
         searchView.clearFocus();
         searchView.setQueryHint(getString(R.string.search_hint));
+
+        int searchSrcTextId = getResources().getIdentifier("android:id/search_src_text", null, null);
+        EditText searchEditText = (EditText) searchView.findViewById(searchSrcTextId);
+        searchEditText.setTextColor(Color.WHITE);
+        searchEditText.setHintTextColor(Color.LTGRAY);
 
         return true;
     }
@@ -175,13 +176,13 @@ public class ItemListActivity extends WebSocketActivity implements SearchView.On
                                 ItemSQLiteHelper.COLUMN_ISBIDDING + "=1 or " + ItemSQLiteHelper.COLUMN_ISWATCHING
                                         + "=1", null, "CASE WHEN " + ItemSQLiteHelper.COLUMN_WINNER + "!="
                                 + user.getBidder() + " THEN 0 ELSE 1 END");
-                setTitle("My Items");
+                setTitle(getString(R.string.myitems));
                 break;
             case TYPE_LOWBIDS:
                 _cursorLoader =
                         new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
                                 ItemSQLiteHelper.COLUMN_BIDCOUNT + "<=2", null, ItemSQLiteHelper.COLUMN_BIDCOUNT);
-                setTitle("Low Bids");
+                setTitle(getString(R.string.lowbids));
                 break;
             case TYPE_SEARCH:
                 _cursorLoader =
@@ -190,13 +191,13 @@ public class ItemListActivity extends WebSocketActivity implements SearchView.On
                                         + ItemSQLiteHelper.COLUMN_NAME + " like '%" + _filter + "%' or "
                                         + ItemSQLiteHelper.COLUMN_DESCRIPTION + " like '%" + _filter + "%'", null,
                                 ItemSQLiteHelper.COLUMN_NUMBER);
-                setTitle("Search Results");
+                setTitle(getString(R.string.searchresults));
                 break;
             default:
                 _cursorLoader =
                         new CursorLoader(this, ItemContentProvider.CONTENT_URI, ItemDataSource.ALL_COLUMNS,
                                 null, null, null);
-                setTitle("Items");
+                setTitle(getString(R.string.items));
         }
         return _cursorLoader;
     }
@@ -233,42 +234,23 @@ public class ItemListActivity extends WebSocketActivity implements SearchView.On
     }
 
     private void refreshItems() {
-        if (_getItemsTask != null) {
+        if (_refreshTask != null) {
             return;
         }
 
         User user = ((AuctionApplication) getApplication()).getUser();
-        _getItemsTask = new GetItemsTask(user);
-        _getItemsTask.execute();
+        _refreshTask = new RefreshItemsTask(user);
+        _refreshTask.execute();
     }
 
-    public class GetItemsTask extends AsyncTask<String, Void, Boolean> {
-        private final User _user;
-
-        public GetItemsTask(User user) {
-            _user = user;
-        }
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            try {
-                fetchItems();
-                fetchBids(_user.getBidder(), _user.getPassword());
-                fetchWatches(_user.getBidder(), _user.getPassword());
-            } catch (IOException e) {
-                Log.e(TAG, "Error fetching auction items.", e);
-                return false;
-            } catch (JSONException e) {
-                Log.e(TAG, "Error fetching auction items.", e);
-                return false;
-            }
-
-            return true;
+    public class RefreshItemsTask extends GetItemsTask {
+        public RefreshItemsTask(User user) {
+            super(getApplicationContext(), user);
         }
 
         @Override
         protected void onPostExecute(Boolean success) {
-            _getItemsTask = null;
+            _refreshTask = null;
             _swipeContainer.setRefreshing(false);
 
             if (success) {
@@ -277,52 +259,6 @@ public class ItemListActivity extends WebSocketActivity implements SearchView.On
             } else {
                 Toast.makeText(ItemListActivity.this, getString(R.string.refresh_failed),
                         Toast.LENGTH_SHORT).show();
-            }
-        }
-
-        private void fetchItems() throws IOException, JSONException {
-            ItemDataSource datasource = new ItemDataSource(getApplicationContext());
-
-            String response = RESTClient.get("/event/auctions/1/items", null);
-
-            JSONArray array = new JSONArray(response);
-
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject object = array.getJSONObject(i);
-
-                datasource.createItem(object.getLong("uid"), object.getString("itemNumber"),
-                        object.getString("name"), object.getString("description"),
-                        object.getString("category"), object.getString("seller"), object.getDouble("valPrice"),
-                        object.getDouble("minPrice"), object.getDouble("incPrice"),
-                        object.getDouble("curPrice"), object.optString("winner", ""),
-                        object.optLong("bidCount", 0), object.optLong("watchCount", 0),
-                        object.optString("url", ""), object.getBoolean("multi"));
-            }
-        }
-
-        private void fetchBids(String bidder, String password) throws IOException, JSONException {
-            ItemDataSource datasource = new ItemDataSource(getApplicationContext());
-
-            String response = RESTClient.get("/live/bids", bidder, password);
-
-            JSONArray array = new JSONArray(response);
-
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject object = array.getJSONObject(i);
-                datasource.setIsBidding(object.getLong("uid"));
-            }
-        }
-
-        private void fetchWatches(String bidder, String password) throws IOException, JSONException {
-            ItemDataSource datasource = new ItemDataSource(getApplicationContext());
-
-            String response = RESTClient.get("/live/watches", bidder, password);
-
-            JSONArray array = new JSONArray(response);
-
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject object = array.getJSONObject(i);
-                datasource.setIsWatching(object.getLong("uid"));
             }
         }
     }

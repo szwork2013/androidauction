@@ -28,6 +28,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -106,8 +107,8 @@ public class FundActivity extends WebSocketActivity implements SearchView.OnQuer
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
 
         updateView();
     }
@@ -125,6 +126,11 @@ public class FundActivity extends WebSocketActivity implements SearchView.OnQuer
         searchView.setFocusableInTouchMode(true);
         searchView.clearFocus();
         searchView.setQueryHint(getString(R.string.search_hint));
+
+        int searchSrcTextId = getResources().getIdentifier("android:id/search_src_text", null, null);
+        EditText searchEditText = (EditText) searchView.findViewById(searchSrcTextId);
+        searchEditText.setTextColor(Color.WHITE);
+        searchEditText.setHintTextColor(Color.LTGRAY);
 
         return true;
     }

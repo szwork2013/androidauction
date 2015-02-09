@@ -17,6 +17,7 @@ package com.mobiaware.mobiauction;
 import android.app.Activity;
 import android.os.Bundle;
 
+import com.mobiaware.mobiauction.tasks.GetItemsTask;
 import com.mobiaware.mobiauction.users.User;
 
 public class MainActivity extends Activity {
@@ -26,6 +27,9 @@ public class MainActivity extends Activity {
 
         User user = ((AuctionApplication) getApplication()).getUser();
         if (user != null) {
+            GetItemsTask getItemsTask = new GetItemsTask(getApplicationContext(), user);
+            getItemsTask.execute();
+
             startActivity(AuctionActivity.newInstance(getApplicationContext()));
         } else {
             startActivity(LoginActivity.newInstance(getApplicationContext()));

@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".AuctionApplication"
+        android:name="com.mobiaware.mobiauction.AuctionApplication"
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -15,7 +15,7 @@
             android:authorities="com.mobiaware.mobiauction.items.ItemContentProvider" />
 
         <activity
-            android:name=".MainActivity"
+            android:name="com.mobiaware.mobiauction.MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>
@@ -24,45 +24,45 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".LoginActivity"
+            android:name="com.mobiaware.mobiauction.LoginActivity"
             android:label="@string/title_activity_login"
             android:screenOrientation="portrait"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize|stateVisible" />
         <activity
-            android:name=".AuctionActivity"
+            android:name="com.mobiaware.mobiauction.AuctionActivity"
             android:label="@string/title_activity_items"
             android:launchMode="singleTask"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".ItemListActivity"
+            android:name="com.mobiaware.mobiauction.ItemListActivity"
             android:label="@string/title_activity_item_list"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:parentActivityName=".AuctionActivity">
+            android:parentActivityName="com.mobiaware.mobiauction.AuctionActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".AuctionActivity" />
+                android:value="com.mobiaware.mobiauction.AuctionActivity" />
         </activity>
         <activity
-            android:name=".BidActivity"
+            android:name="com.mobiaware.mobiauction.BidActivity"
             android:label="@string/title_activity_bid"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:parentActivityName=".ItemListActivity">
+            android:parentActivityName="com.mobiaware.mobiauction.ItemListActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ItemListActivity" />
+                android:value="com.mobiaware.mobiauction.ItemListActivity" />
         </activity>
         <activity
-            android:name=".FundActivity"
+            android:name="com.mobiaware.mobiauction.FundActivity"
             android:label="@string/title_activity_fund"
             android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:parentActivityName=".AuctionActivity">
+            android:parentActivityName="com.mobiaware.mobiauction.AuctionActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".AuctionActivity" />
+                android:value="com.mobiaware.mobiauction.AuctionActivity" />
         </activity>
     </application>
 

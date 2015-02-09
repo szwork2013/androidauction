@@ -49,6 +49,14 @@
     <string name="title_activity_bid">Details</string>
     <string name="title_activity_item_list">Items</string>
     <string name="title_activity_fund">Fund A Cause</string>
+    <string name="message_outbid_title">You have been outbid!</string>
+    <string name="message_outbid_content">Touch to view My Items.</string>
+    <string name="message_outbid_generic">You have been outbid! Touch My Items to view current bids.</string>
+    <string name="myitems">My Items</string>
+    <string name="items">Items</string>
+    <string name="fundacause">Fund</string>
+    <string name="lowbids">Low Bids</string>
+    <string name="searchresults">Search</string>
 
     <string-array name="label_bid_count">
         <item>"No bids"</item>

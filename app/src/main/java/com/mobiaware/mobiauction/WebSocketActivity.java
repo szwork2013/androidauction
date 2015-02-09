@@ -24,6 +24,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
+import android.util.Log;
+import android.view.Gravity;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.funds.Fund;
@@ -39,7 +41,11 @@ import de.tavendo.autobahn.WebSocketException;
 import de.tavendo.autobahn.WebSocketHandler;
 
 public abstract class WebSocketActivity extends Activity {
+    private static final String TAG = WebSocketActivity.class.getName();
+
     private static final String API_WS = "ws://mobiaware.com/liveauction/notify";
+
+    private static final int NOTIFICATION_ID = 1111;
 
     private static enum MessageType {
         INVALID, ITEM, FUND, OUTBID
@@ -52,20 +58,8 @@ public abstract class WebSocketActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         _connection = new WebSocketConnection();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
 
         start();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        stop();
     }
 
     @Override
@@ -76,63 +70,40 @@ public abstract class WebSocketActivity extends Activity {
     }
 
     public void onItemMessageReceived() {
-        // nothing
+        // no default handler
     }
 
     public void onFundMessageReceived() {
-        // nothing
+        // no default handler
     }
 
     public void onOutbidMessageReceived() {
-        //Toast.makeText(this, "You have been outbid!", Toast.LENGTH_SHORT).show();
-
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.drawable.ic_stat_name)
-                        .setContentTitle("You have been outbid!")
-                        .setContentText("Touch to view your items.")
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this).setSmallIcon(R.drawable.ic_stat_name)
+                        .setContentTitle(getString(R.string.message_outbid_title))
+                        .setContentText(getString(R.string.message_outbid_content))
                         .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 
-        Intent intent = AuctionActivity.newInstance(getApplicationContext());
-        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        Intent intent =
+                ItemListActivity.newInstance(getApplicationContext(), ItemListActivity.TYPE_MYITEMS, null);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
-        // The stack builder object will contain an artificial back stack for the
-// started Activity.
-// This ensures that navigating backward from the Activity leads out of
-// your application to the Home screen.
         TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
-// Adds the back stack for the Intent (but not the Intent itself)
-        stackBuilder.addParentStack(AuctionActivity.class);
-// Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addParentStack(ItemListActivity.class);
         stackBuilder.addNextIntent(intent);
         PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(
-                        0,
-                        PendingIntent.FLAG_UPDATE_CURRENT
-                );
-
-//        PendingIntent notifyIntent =
-//                PendingIntent.getActivity(
-//                        this,
-//                        0,
-//                        intent,
-//                        PendingIntent.FLAG_UPDATE_CURRENT
-//                );
-//
-//        mBuilder.setContentIntent(notifyIntent);
-
-       // TaskStackBuilder stackBuilder = TaskStackBuilder.create (getApplicationContext ());
-       // stackBuilder.addNextIntentWithParentStack (intent);
-       // //intent.addFlags (Intent.FLAG_ACTIVITY_NEW_TASK);
-       // PendingIntent notifyIntent = stackBuilder.getPendingIntent (0,PendingIntent.FLAG_UPDATE_CURRENT);
-
-        mBuilder.setContentIntent(resultPendingIntent);
+                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(resultPendingIntent);
 
         NotificationManager mNotificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-// mId allows you to update the notification later on.
-        mNotificationManager.notify(0, mBuilder.build());
+        mNotificationManager.notify(NOTIFICATION_ID, builder.build());
+
+        Toast toast =
+                Toast.makeText(getApplicationContext(), getString(R.string.message_outbid_generic),
+                        Toast.LENGTH_SHORT);
+        toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+        toast.show();
 
         onItemMessageReceived();
     }
@@ -141,23 +112,13 @@ public abstract class WebSocketActivity extends Activity {
         try {
             _connection.connect(API_WS, new WebSocketHandler() {
                 @Override
-                public void onOpen() {
-                    // TODO
-                }
-
-                @Override
                 public void onTextMessage(String payload) {
                     TextMessageTask task = new TextMessageTask();
                     task.execute(payload);
                 }
-
-                @Override
-                public void onClose(int code, String reason) {
-                    // TODO
-                }
             });
         } catch (WebSocketException e) {
-            // TODO
+            Log.e(TAG, "Unable to start websocket connection.", e);
         }
     }
 
@@ -176,6 +137,7 @@ public abstract class WebSocketActivity extends Activity {
                     JSONObject json = object.getJSONObject("liveauction-item");
 
                     MessageType type = MessageType.ITEM;
+
                     ItemDataSource datasource = new ItemDataSource(getApplicationContext());
 
                     Item tmp = datasource.getItem(json.getLong("uid"));
@@ -184,7 +146,6 @@ public abstract class WebSocketActivity extends Activity {
                         boolean isWinningNow = user.getBidder().equals(tmp.getWinner());
                         boolean isWinningAfter = user.getBidder().equals(json.getString("winner"));
                         if (isWinningNow && !isWinningAfter) {
-
                             type = MessageType.OUTBID;
                         }
                     }
@@ -200,7 +161,7 @@ public abstract class WebSocketActivity extends Activity {
                     return MessageType.FUND;
                 }
             } catch (JSONException e) {
-                // TODO
+                Log.e(TAG, "Unable to parse websocket message.", e);
             }
             return MessageType.INVALID;
         }

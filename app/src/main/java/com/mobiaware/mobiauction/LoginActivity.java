@@ -31,6 +31,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.mobiaware.mobiauction.api.RESTClient;
+import com.mobiaware.mobiauction.tasks.GetItemsTask;
 import com.mobiaware.mobiauction.users.User;
 import com.mobiaware.mobiauction.utils.Preconditions;
 
@@ -173,6 +174,10 @@ public class LoginActivity extends Activity {
 
             if (user != null) {
                 ((AuctionApplication) getApplication()).setUser(user);
+
+                GetItemsTask getItemsTask = new GetItemsTask(getApplicationContext(), user);
+                getItemsTask.execute();
+
                 startActivity(AuctionActivity.newInstance(getApplicationContext()));
                 finish();
             } else {
