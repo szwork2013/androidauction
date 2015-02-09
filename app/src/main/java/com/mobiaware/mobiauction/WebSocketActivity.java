@@ -15,8 +15,15 @@
 package com.mobiaware.mobiauction;
 
 import android.app.Activity;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.media.RingtoneManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.funds.Fund;
@@ -77,7 +84,56 @@ public abstract class WebSocketActivity extends Activity {
     }
 
     public void onOutbidMessageReceived() {
-        Toast.makeText(this, "You have been outbid!", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "You have been outbid!", Toast.LENGTH_SHORT).show();
+
+        NotificationCompat.Builder mBuilder =
+                new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_stat_name)
+                        .setContentTitle("You have been outbid!")
+                        .setContentText("Touch to view your items.")
+                        .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
+
+        Intent intent = AuctionActivity.newInstance(getApplicationContext());
+        //intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        // The stack builder object will contain an artificial back stack for the
+// started Activity.
+// This ensures that navigating backward from the Activity leads out of
+// your application to the Home screen.
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+// Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(AuctionActivity.class);
+// Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(intent);
+        PendingIntent resultPendingIntent =
+                stackBuilder.getPendingIntent(
+                        0,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+//        PendingIntent notifyIntent =
+//                PendingIntent.getActivity(
+//                        this,
+//                        0,
+//                        intent,
+//                        PendingIntent.FLAG_UPDATE_CURRENT
+//                );
+//
+//        mBuilder.setContentIntent(notifyIntent);
+
+       // TaskStackBuilder stackBuilder = TaskStackBuilder.create (getApplicationContext ());
+       // stackBuilder.addNextIntentWithParentStack (intent);
+       // //intent.addFlags (Intent.FLAG_ACTIVITY_NEW_TASK);
+       // PendingIntent notifyIntent = stackBuilder.getPendingIntent (0,PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder.setContentIntent(resultPendingIntent);
+
+        NotificationManager mNotificationManager =
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+// mId allows you to update the notification later on.
+        mNotificationManager.notify(0, mBuilder.build());
+
         onItemMessageReceived();
     }
 

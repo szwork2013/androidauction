@@ -38,28 +38,31 @@
             android:name=".ItemListActivity"
             android:label="@string/title_activity_item_list"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:parentActivityName=".AuctionActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.mobiaware.mobiauction.AuctionActivity" />
+                android:value=".AuctionActivity" />
         </activity>
         <activity
             android:name=".BidActivity"
             android:label="@string/title_activity_bid"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:parentActivityName=".ItemListActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.mobiaware.mobiauction.ItemListActivity" />
+                android:value=".ItemListActivity" />
         </activity>
         <activity
             android:name=".FundActivity"
             android:label="@string/title_activity_fund"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:parentActivityName=".AuctionActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.mobiaware.mobiauction.AuctionActivity" />
+                android:value=".AuctionActivity" />
         </activity>
     </application>
 
