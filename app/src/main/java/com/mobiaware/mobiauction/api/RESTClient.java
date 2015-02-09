@@ -30,7 +30,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import java.io.IOException;
 
 public class RESTClient {
-    private static final String API_HOST = "http://mobiaware.com/liveauction";
+    private static final String API_HOST = "https://mobiaware.com/liveauction";
 
     private RESTClient() {
         // static only
