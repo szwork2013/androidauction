@@ -25,7 +25,6 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
-import android.view.Gravity;
 import android.widget.Toast;
 
 import com.mobiaware.mobiauction.funds.Fund;
@@ -38,7 +37,8 @@ import org.json.JSONObject;
 
 import de.tavendo.autobahn.WebSocketConnection;
 import de.tavendo.autobahn.WebSocketException;
-import de.tavendo.autobahn.WebSocketHandler;
+import de.tavendo.autobahn.WebSocketConnectionHandler;
+import de.tavendo.autobahn.WebSocketOptions;
 
 public abstract class WebSocketActivity extends Activity {
     private static final String TAG = WebSocketActivity.class.getName();
@@ -57,16 +57,31 @@ public abstract class WebSocketActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        _connection = new WebSocketConnection();
+        WebSocketOptions options = new WebSocketOptions();
+        options.setReconnectInterval(60000);
 
-        start();
+        _connection = new WebSocketConnection();
+        try {
+            _connection.connect(API_WS, new WebSocketConnectionHandler() {
+                @Override
+                public void onTextMessage(String payload) {
+                    TextMessageTask task = new TextMessageTask();
+                    task.execute(payload);
+                }
+            }/*, options*/);
+        } catch (WebSocketException e) {
+            Log.e(TAG, "Unable to start websocket connection.", e);
+        }
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        stop();
+        if ((_connection != null) && (_connection.isConnected())) {
+            _connection.disconnect();
+            _connection = null;
+        }
     }
 
     public void onItemMessageReceived() {
@@ -101,31 +116,11 @@ public abstract class WebSocketActivity extends Activity {
 
         Toast toast =
                 Toast.makeText(getApplicationContext(), getString(R.string.message_outbid_generic),
-                        Toast.LENGTH_SHORT);
-        toast.setGravity(Gravity.CENTER_VERTICAL | Gravity.CENTER_HORIZONTAL, 0, 0);
+                        Toast.LENGTH_LONG);
+        //toast.setGravity(Gravity.TOP | Gravity.CENTER_HORIZONTAL, 0, 0);
         toast.show();
 
         onItemMessageReceived();
-    }
-
-    private void start() {
-        try {
-            _connection.connect(API_WS, new WebSocketHandler() {
-                @Override
-                public void onTextMessage(String payload) {
-                    TextMessageTask task = new TextMessageTask();
-                    task.execute(payload);
-                }
-            });
-        } catch (WebSocketException e) {
-            Log.e(TAG, "Unable to start websocket connection.", e);
-        }
-    }
-
-    private void stop() {
-        if (_connection.isConnected()) {
-            _connection.disconnect();
-        }
     }
 
     private class TextMessageTask extends AsyncTask<String, Void, MessageType> {
